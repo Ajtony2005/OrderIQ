@@ -12,6 +12,7 @@
     "build": "yarn workspace @orderiq/types build && yarn workspace @orderiq/backend build && yarn workspace @orderiq/frontend build",
     "dev": "yarn workspace @orderiq/backend dev",
     "lint": "yarn workspace @orderiq/backend lint && yarn workspace @orderiq/frontend lint",
+    "ci": "yarn lint && yarn build",
     "format": "yarn workspace @orderiq/backend format && yarn workspace @orderiq/frontend format"
   },
   "devDependencies": {
