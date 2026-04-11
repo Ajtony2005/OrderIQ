@@ -1,0 +1,20 @@
+{
+  "name": "orderiq",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "yarn@1.22.22",
+  "workspaces": [
+    "backend",
+    "frontend",
+    "types"
+  ],
+  "scripts": {
+    "build": "yarn workspace @orderiq/types build && yarn workspace @orderiq/backend build && yarn workspace @orderiq/frontend build",
+    "dev": "yarn workspace @orderiq/backend dev",
+    "lint": "yarn workspace @orderiq/backend lint && yarn workspace @orderiq/frontend lint",
+    "format": "yarn workspace @orderiq/backend format && yarn workspace @orderiq/frontend format"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
