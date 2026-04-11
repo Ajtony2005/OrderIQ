@@ -14,11 +14,16 @@
     "backend:dev": "yarn workspace @orderiq/backend dev",
     "frontend:dev": "yarn workspace @orderiq/frontend dev",
     "lint": "yarn workspace @orderiq/backend lint && yarn workspace @orderiq/frontend lint",
-    "ci": "yarn lint && yarn build",
+    "format:check": "prettier --check .",
+    "ci": "yarn lint && yarn format:check && yarn build",
     "format": "yarn workspace @orderiq/backend format && yarn workspace @orderiq/frontend format"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "concurrently": "^9.1.2",
+    "globals": "^16.4.0",
+    "prettier": "^3.5.3",
+    "typescript-eslint": "^8.46.1",
     "typescript": "^5.8.3"
   }
 }
