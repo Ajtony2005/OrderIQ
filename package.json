@@ -10,12 +10,15 @@
   ],
   "scripts": {
     "build": "yarn workspace @orderiq/types build && yarn workspace @orderiq/backend build && yarn workspace @orderiq/frontend build",
-    "dev": "yarn workspace @orderiq/backend dev",
+    "dev": "concurrently -n backend,frontend -c blue,green \"yarn backend:dev\" \"yarn frontend:dev\"",
+    "backend:dev": "yarn workspace @orderiq/backend dev",
+    "frontend:dev": "yarn workspace @orderiq/frontend dev",
     "lint": "yarn workspace @orderiq/backend lint && yarn workspace @orderiq/frontend lint",
     "ci": "yarn lint && yarn build",
     "format": "yarn workspace @orderiq/backend format && yarn workspace @orderiq/frontend format"
   },
   "devDependencies": {
+    "concurrently": "^9.1.2",
     "typescript": "^5.8.3"
   }
 }
