@@ -9,6 +9,11 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ id, name, price, image, onAdd }: ProductCardProps) {
+  const priceLabel = new Intl.NumberFormat("hu-HU", {
+    style: "currency",
+    currency: "HUF",
+  }).format(price);
+
   return (
     <motion.button
       whileTap={{ scale: 0.97 }}
@@ -20,7 +25,7 @@ export function ProductCard({ id, name, price, image, onAdd }: ProductCardProps)
       </div>
       <div className="p-5 flex flex-col gap-1">
         <h3 className="text-left">{name}</h3>
-        <p className="text-left text-gray-600">${price.toFixed(2)}</p>
+        <p className="text-left text-gray-600">{priceLabel}</p>
       </div>
     </motion.button>
   );

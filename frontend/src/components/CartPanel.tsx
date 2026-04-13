@@ -17,13 +17,17 @@ interface CartPanelProps {
 
 export function CartPanel({ items, onUpdateQuantity, onRemove, onCheckout }: CartPanelProps) {
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = subtotal * 0.08;
+  const tax = subtotal * 0.27;
   const total = subtotal + tax;
+  const money = new Intl.NumberFormat("hu-HU", {
+    style: "currency",
+    currency: "HUF",
+  });
 
   return (
     <div className="flex flex-col h-full bg-white border-l border-gray-200">
       <div className="p-6 border-b border-gray-200">
-        <h2>Current Order</h2>
+        <h2>Aktuális rendelés</h2>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6">
@@ -35,7 +39,7 @@ export function CartPanel({ items, onUpdateQuantity, onRemove, onCheckout }: Car
               exit={{ opacity: 0 }}
               className="flex items-center justify-center h-full text-gray-400"
             >
-              <p>No items added</p>
+              <p>Nincs tétel</p>
             </motion.div>
           ) : (
             <div className="space-y-4">
@@ -50,7 +54,7 @@ export function CartPanel({ items, onUpdateQuantity, onRemove, onCheckout }: Car
                 >
                   <div className="flex-1 min-w-0">
                     <h4 className="truncate">{item.name}</h4>
-                    <p className="text-gray-600">${item.price.toFixed(2)}</p>
+                    <p className="text-gray-600">{money.format(item.price)}</p>
                   </div>
 
                   <div className="flex items-center gap-2 bg-gray-100 rounded-xl p-1">
@@ -88,16 +92,16 @@ export function CartPanel({ items, onUpdateQuantity, onRemove, onCheckout }: Car
       <div className="p-6 border-t border-gray-200 space-y-4">
         <div className="space-y-2">
           <div className="flex justify-between text-gray-600">
-            <span>Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span>Részösszeg</span>
+            <span>{money.format(subtotal)}</span>
           </div>
           <div className="flex justify-between text-gray-600">
-            <span>Tax (8%)</span>
-            <span>${tax.toFixed(2)}</span>
+            <span>Áfa (27%)</span>
+            <span>{money.format(tax)}</span>
           </div>
           <div className="flex justify-between pt-2 border-t border-gray-200">
-            <span>Total</span>
-            <span>${total.toFixed(2)}</span>
+            <span>Végösszeg</span>
+            <span>{money.format(total)}</span>
           </div>
         </div>
 
@@ -110,7 +114,7 @@ export function CartPanel({ items, onUpdateQuantity, onRemove, onCheckout }: Car
             color: items.length > 0 ? "white" : "#9ca3af",
           }}
         >
-          Checkout
+          Fizetés
         </button>
       </div>
     </div>
