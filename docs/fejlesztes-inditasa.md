@@ -1,49 +1,68 @@
-# Fejlesztés elkezdése
+# Fejlesztői útmutató
 
-Ez az útmutató annak szól, aki most csatlakozik az OrderIQ projekthez, és gyorsan szeretné elkezdeni a fejlesztést helyi környezetben.
+Ez az útmutató az OrderIQ projekt helyi fejlesztéséhez készült. A repository egy monorepo, amelyben a backend, a frontend és a közös TypeScript típusok külön workspace-ekben élnek.
 
-## 1. Előfeltételek
+## 1. Technológiai stack
 
-A fejlesztéshez az alábbi eszközök szükségesek:
+- Frontend: React, TypeScript, Vite, TanStack Query, Zustand, Framer Motion
+- Backend: NestJS, Fastify adapter, Prisma ORM, PostgreSQL
+- Közös csomag: `types/` workspace a megosztott Zod sémákhoz és TypeScript típusokhoz
+- Package manager: Yarn 1.22.x
 
-- Node.js 22 vagy újabb
+## 2. Repository struktúra
+
+- `frontend/`: React + Vite kliens
+- `backend/`: NestJS API és Prisma réteg
+- `types/`: megosztott típusok és validációs sémák
+- `docs/`: belső dokumentáció és útmutatók
+- `docker/`: konténeres infrastruktúra kiegészítő fájlok
+
+## 3. Előfeltételek
+
+Ajánlott környezet:
+
+- Node.js 22 LTS vagy újabb
 - Yarn 1.22.x
-- PostgreSQL 16 vagy újabb, helyben telepítve
+- PostgreSQL 16 vagy újabb
 - Git
+- VS Code
 
-## 2. Projekt letöltése
+A projekt nem igényel Docker Desktopot a helyi fejlesztéshez.
 
-Másold le a repót, majd lépj be a gyökérkönyvtárba:
+## 4. Projekt letöltése
 
 ```bash
 git clone <repo-url>
 cd OrderIQ
-```
-
-## 3. Környezeti változók beállítása
-
-A projekt gyökerében található `.env.example` fájlt másold át `.env` néven, majd állítsd be a szükséges értékeket.
-
-A legfontosabb változók:
-
-- `PORT`: a backend portja
-- `DATABASE_URL`: PostgreSQL kapcsolati string
-- `JWT_SECRET`: JWT aláírási kulcs
-- `APP_ENV`: futtatási környezet
-
-Fejlesztésnél a `DATABASE_URL` a helyben futó PostgreSQL példányra mutasson.
-
-## 4. Függőségek telepítése
-
-Telepítsd a workspace csomagok függőségeit:
-
-```bash
 yarn install
 ```
 
-## 5. Adatbázis indítása
+A gyökérből futtatott `yarn install` telepíti az összes workspace függőséget.
 
-Fejlesztéshez nem kell Docker. Indítsd el a helyben telepített PostgreSQL szolgáltatást, majd hozd létre benne az `orderiq` adatbázist.
+## 5. Környezeti változók
+
+A gyökérben található `.env.example` alapján hozd létre a `.env` fájlt, majd állítsd be az értékeket.
+
+A backend által használt legfontosabb változók:
+
+- `PORT`: a backend portja, alapértelmezés szerint `3000`
+- `DATABASE_URL`: PostgreSQL kapcsolati string
+- `JWT_SECRET`: JWT aláírási kulcs
+- `APP_ENV`: futtatási környezet
+- `GOOGLE_CLIENT_ID`: opcionális, Google bejelentkezéshez szükséges
+
+Példa:
+
+```env
+PORT=3000
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/orderiq
+JWT_SECRET=change-me
+APP_ENV=development
+```
+
+## 6. Adatbázis előkészítés
+
+A backend PostgreSQL adatbázist használ. Hozd létre az `orderiq` adatbázist, majd ellenőrizd, hogy a `DATABASE_URL` erre mutat.
 
 Példa lokális kapcsolati string:
 
@@ -51,72 +70,90 @@ Példa lokális kapcsolati string:
 postgresql://postgres:postgres@localhost:5432/orderiq
 ```
 
-Ha még nincs létrehozva az adatbázis, hozd létre manuálisan vagy psql-ből.
+Ha új környezetet állítasz fel, győződj meg róla, hogy a PostgreSQL fut, és a megadott felhasználónak van joga az adatbázis használatához.
 
-## 6. Prisma előkészítés
+## 7. Prisma előkészítés
 
-Telepítsd a Prisma kliensséget és generáld le az ORM réteget:
+A backend workspace-ben futtasd a Prisma generálást:
 
 ```bash
-yarn workspace @orderiq/backend prisma generate
+yarn workspace @orderiq/backend prisma:generate
 ```
 
-Ha az adatmodell már kész, futtasd a migrációkat is:
+Ha a schema vagy a migrációk változtak, futtasd a migrációt is:
 
 ```bash
 yarn workspace @orderiq/backend prisma migrate dev
 ```
 
-## 7. Fejlesztői futtatás
+A backend `dev` és `build` scriptjei automatikusan meghívják a Prisma generálást, de schema módosítás után külön is érdemes lefuttatni.
 
-A jelenlegi scaffold alapján külön érdemes indítani a backend és a frontend szolgáltatást.
+## 8. Fejlesztői futtatás
 
-Backend:
-
-```bash
-yarn workspace @orderiq/backend dev
-```
-
-Frontend:
-
-```bash
-yarn workspace @orderiq/frontend dev
-```
-
-Ha csak a root parancsot akarod használni a backendhez:
+A teljes alkalmazás indítása a gyökérből:
 
 ```bash
 yarn dev
 ```
 
-## 8. Ellenőrzés
+Ez a backend és a frontend futtatását is elindítja.
 
-Backend health ellenőrzés:
+Külön workspace-ekből is indíthatod:
 
 ```bash
-GET http://localhost:3000/health
+yarn backend:dev
 ```
 
-A frontend alapértelmezés szerint a Vite fejlesztői szerveren érhető el.
+```bash
+yarn frontend:dev
+```
 
-## 9. Hasznos parancsok
+Ha workspace-en belül dolgozol:
 
-- `yarn build`: a workspace buildelése.
-- `yarn lint`: linter futtatása a fő csomagokon.
-- `yarn format`: formázás a backend és frontend fájlokon.
+```bash
+cd backend
+yarn dev
+```
 
-## 10. Projektszerkezet röviden
+```bash
+cd frontend
+yarn dev
+```
 
-- `backend/`: API, üzleti logika, adatbázis és validáció.
-- `frontend/`: felhasználói felület és kliensoldali logika.
-- `types/`: közös TypeScript típusok és sémák.
-- `docs/`: leírások, architektúra és onboarding anyagok.
-- `docker/`: Caddy és konténeres konfigurációk.
+## 9. Elérési pontok
 
-## 11. Első fejlesztői feladat javaslat
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:3000/api/v1`
+- Health check: `GET http://localhost:3000/api/v1/health`
+- Swagger UI: `http://localhost:3000/docs` (csak `APP_ENV=development` esetén)
 
-Ha most csatlakoztál, a legjobb első lépések általában ezek:
+## 10. Hasznos parancsok
 
-1. Indítsd el a backend health endpointot.
-2. Nézd át a docs mappát.
-3. Készíts egy egyszerű feature-t a frontendben vagy a backendben, és ellenőrizd, hogyan illeszkedik a monorepo struktúrába.
+- `yarn build`: a teljes monorepo buildelése
+- `yarn lint`: lint futtatása backend és frontend workspace-en
+- `yarn format:check`: formázásellenőrzés a repository egészén
+- `yarn format`: automatikus formázás a frontend és backend forrásokon
+- `yarn workspace @orderiq/backend prisma:generate`: Prisma kliens generálása
+- `yarn workspace @orderiq/backend prisma migrate dev`: migrációk futtatása fejlesztés közben
+
+## 11. Konvenciók
+
+- A `.env` fájlt nem commitoljuk.
+- Titkos értékek csak környezeti változókban szerepeljenek.
+- A backend validációja Zod sémákra és DTO-kra épül.
+- A közös típusokat és sémákat a `types/` workspace-ben érdemes tartani.
+
+## 12. Hibaelhárítás
+
+Ha valami nem indul:
+
+- Ellenőrizd a Node verziót: `node -v`
+- Ellenőrizd a Yarn verziót: `yarn -v`
+- Nézd meg, hogy létezik-e a `.env`
+- Ellenőrizd, hogy fut-e a PostgreSQL
+- Futtasd újra a Prisma generálást: `yarn workspace @orderiq/backend prisma:generate`
+
+## 13. További dokumentáció
+
+- [Repository áttekintés](../README.md)
+- [Confluence szinkron](../README.md#confluence-dokumentacio-szinkron)

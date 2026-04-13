@@ -11,12 +11,13 @@
   "scripts": {
     "build": "yarn workspace @orderiq/types build && yarn workspace @orderiq/backend build && yarn workspace @orderiq/frontend build",
     "dev": "concurrently -n backend,frontend -c blue,green \"yarn backend:dev\" \"yarn frontend:dev\"",
-    "backend:dev": "yarn workspace @orderiq/backend dev",
+    "backend:dev": "yarn workspace @orderiq/types build && yarn workspace @orderiq/backend dev",
     "frontend:dev": "yarn workspace @orderiq/frontend dev",
     "lint": "yarn workspace @orderiq/backend lint && yarn workspace @orderiq/frontend lint",
     "format:check": "prettier --check .",
     "ci": "yarn lint && yarn format:check && yarn build",
-    "format": "yarn workspace @orderiq/backend format && yarn workspace @orderiq/frontend format"
+    "format": "yarn workspace @orderiq/backend format && yarn workspace @orderiq/frontend format",
+    "docs:confluence:sync": "node ./scripts/sync-confluence-docs.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

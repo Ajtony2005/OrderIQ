@@ -3,14 +3,21 @@
   "private": true,
   "version": "0.1.0",
   "dependencies": {
+    "@orderiq/types": "0.1.0",
     "@fastify/swagger": "^9.7.0",
     "@fastify/swagger-ui": "^5.2.5",
+    "@nestjs/jwt": "^11.0.1",
+    "@nestjs/passport": "^11.0.5",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-fastify": "^11.0.1",
     "@nestjs/swagger": "^11.2.7",
+    "@prisma/client": "^6.6.0",
+    "bcrypt": "^5.1.1",
     "fastify": "^5.2.1",
+    "google-auth-library": "^9.15.1",
     "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
     "prisma": "^6.6.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
@@ -18,15 +25,21 @@
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.1",
+    "@types/bcrypt": "^5.0.2",
     "@types/node": "^22.13.14",
+    "@types/passport-local": "^1.0.38",
     "eslint": "^9.22.0",
     "prettier": "^3.5.3",
     "typescript": "^5.8.3"
   },
   "scripts": {
+    "prisma:generate": "prisma generate",
+    "prisma:format": "prisma format",
+    "predev": "yarn prisma:generate",
     "dev": "nest start --watch",
+    "prebuild": "yarn prisma:generate",
     "build": "nest build",
     "lint": "eslint \"src/**/*.ts\"",
-    "format": "prettier --write \"src/**/*.ts\" \"prisma/**/*.prisma\""
+    "format": "prettier --write \"src/**/*.ts\" && yarn prisma:format"
   }
 }
