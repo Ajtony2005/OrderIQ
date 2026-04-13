@@ -22,8 +22,11 @@ ENV NODE_ENV=production
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/backend/package.json ./backend/package.json
+COPY --from=builder /app/backend/node_modules ./backend/node_modules
 COPY --from=builder /app/backend/prisma ./backend/prisma
 COPY --from=builder /app/backend/dist ./backend/dist
+COPY --from=builder /app/types/package.json ./types/package.json
+COPY --from=builder /app/types/dist ./types/dist
 
 WORKDIR /app/backend
 

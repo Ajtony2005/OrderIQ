@@ -355,7 +355,7 @@ Megjegyzés: a Vite dev proxy a `/api` prefixű hívásokat a `http://localhost:
 | `JWT_SECRET` | JWT aláíró kulcs | `change-me` |
 | `JWT_EXPIRES_IN` | token lejárat | `7d` |
 | `GOOGLE_CLIENT_ID` | backend Google auth client ID | üres |
-| `VITE_API_BASE_URL` | frontend API base URL, integrált használatnál ajánlott érték | `/api` |
+| `VITE_API_BASE_URL` | frontend API base URL, integrált használatnál ajánlott érték | `/api/v1` |
 | `VITE_GOOGLE_CLIENT_ID` | frontend Google client ID | üres |
 | `VITE_ADMIN_EMAIL` | admin email a frontend oldalon | `admin@orderiq.com` |
 | `CADDY_PORT` | publikus HTTP port | `80` |

@@ -7,6 +7,7 @@ import { AppModule } from "./app.module";
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
   app.setGlobalPrefix("api/v1");
+  const port = process.env.PORT ? Number(process.env.PORT) : 3000;
 
   const isDevelopment = process.env.APP_ENV === "development";
 
@@ -29,7 +30,7 @@ async function bootstrap() {
     SwaggerModule.setup("docs", app, swaggerDocument);
   }
 
-  await app.listen(process.env.PORT ? Number(process.env.PORT) : 3000);
+  await app.listen(port, "0.0.0.0");
 }
 
 void bootstrap();

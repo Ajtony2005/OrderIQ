@@ -5,6 +5,11 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-orderiq}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-orderiq}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
@@ -15,7 +20,8 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       PORT: ${API_PORT:-3000}
       APP_ENV: ${APP_ENV:-production}
@@ -28,9 +34,10 @@ services:
 
   web:
     build:
-      context: ./frontend
+      context: .
+      dockerfile: frontend/Dockerfile
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
         VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
         VITE_ADMIN_EMAIL: ${VITE_ADMIN_EMAIL:-admin@orderiq.com}
     expose:
