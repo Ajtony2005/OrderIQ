@@ -26,9 +26,13 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
   const tax = subtotal * 0.08;
   const tip = subtotal * selectedTip;
   const total = subtotal + tax + tip;
+  const money = new Intl.NumberFormat("hu-HU", {
+    style: "currency",
+    currency: "HUF",
+  });
 
   const tipOptions = [
-    { label: "No Tip", value: 0 },
+    { label: "Nincs borravaló", value: 0 },
     { label: "5%", value: 0.05 },
     { label: "10%", value: 0.1 },
     { label: "15%", value: 0.15 },
@@ -66,7 +70,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
               transition={{ delay: 0.4 }}
               className="mb-2"
             >
-              Payment Successful
+              Sikeres fizetés
             </motion.h2>
             <motion.p
               initial={{ opacity: 0 }}
@@ -74,7 +78,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
               transition={{ delay: 0.5 }}
               className="text-gray-600"
             >
-              Thank you for your order!
+              Köszönjük a rendelést!
             </motion.p>
           </motion.div>
         ) : (
@@ -86,48 +90,48 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
               >
                 <ArrowLeftIcon size={24} />
               </button>
-              <h2>Checkout</h2>
+              <h2>Fizetés</h2>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-2xl mx-auto space-y-8">
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                  <h3 className="mb-4">Order Summary</h3>
+                  <h3 className="mb-4">Rendelés összegzése</h3>
                   <div className="space-y-3">
                     {items.map((item) => (
                       <div key={item.id} className="flex justify-between text-gray-600">
                         <span>
                           {item.quantity}x {item.name}
                         </span>
-                        <span>${(item.price * item.quantity).toFixed(2)}</span>
+                        <span>{money.format(item.price * item.quantity)}</span>
                       </div>
                     ))}
                   </div>
 
                   <div className="mt-6 pt-4 border-t border-gray-200 space-y-2">
                     <div className="flex justify-between text-gray-600">
-                      <span>Subtotal</span>
-                      <span>${subtotal.toFixed(2)}</span>
+                      <span>Részösszeg</span>
+                      <span>{money.format(subtotal)}</span>
                     </div>
                     <div className="flex justify-between text-gray-600">
-                      <span>Tax (8%)</span>
-                      <span>${tax.toFixed(2)}</span>
+                      <span>Áfa (8%)</span>
+                      <span>{money.format(tax)}</span>
                     </div>
                     {tip > 0 && (
                       <div className="flex justify-between text-gray-600">
-                        <span>Tip ({(selectedTip * 100).toFixed(0)}%)</span>
-                        <span>${tip.toFixed(2)}</span>
+                        <span>Borravaló ({(selectedTip * 100).toFixed(0)}%)</span>
+                        <span>{money.format(tip)}</span>
                       </div>
                     )}
                     <div className="flex justify-between pt-2 border-t border-gray-200">
-                      <span>Total</span>
-                      <span>${total.toFixed(2)}</span>
+                      <span>Végösszeg</span>
+                      <span>{money.format(total)}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                  <h3 className="mb-4">Add Tip</h3>
+                  <h3 className="mb-4">Borravaló</h3>
                   <div className="grid grid-cols-4 gap-3">
                     {tipOptions.map((option) => (
                       <button
@@ -150,7 +154,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                 </div>
 
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                  <h3 className="mb-4">Payment Method</h3>
+                  <h3 className="mb-4">Fizetési mód</h3>
                   <div className="grid grid-cols-3 gap-4">
                     <button
                       onClick={() => setSelectedPayment("cash")}
@@ -173,7 +177,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                             selectedPayment === "cash" ? "var(--brand-primary)" : "#6b7280",
                         }}
                       >
-                        Cash
+                        Készpénz
                       </span>
                     </button>
 
@@ -198,7 +202,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                             selectedPayment === "card" ? "var(--brand-primary)" : "#6b7280",
                         }}
                       >
-                        Card
+                        Kártya
                       </span>
                     </button>
 
@@ -225,7 +229,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                             selectedPayment === "digital" ? "var(--brand-primary)" : "#6b7280",
                         }}
                       >
-                        Digital
+                        Digitális
                       </span>
                     </button>
                   </div>
@@ -244,7 +248,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                     color: selectedPayment ? "white" : "#9ca3af",
                   }}
                 >
-                  Confirm Payment - ${total.toFixed(2)}
+                  Fizetés megerősítése - {money.format(total)}
                 </button>
               </div>
             </div>
