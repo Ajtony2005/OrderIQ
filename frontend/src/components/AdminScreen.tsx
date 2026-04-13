@@ -1,23 +1,78 @@
 import { useEffect, useMemo, useState } from "react";
-import { endpoints, Product, AdminProductPayload, AdminUserResponse } from "../lib/endpoints";
+import {
+  endpoints,
+  Product,
+  AdminProductPayload,
+  AdminUserResponse,
+  OrderResponse,
+} from "../lib/endpoints";
+import { fetchUnsplashImageUrl } from "../lib/unsplash";
 
 interface AdminScreenProps {
   onBack: () => void;
 }
 
-type AdminTab = "products" | "users";
+type AdminTab = "products" | "users" | "orders";
+
+function normalizeProductPayload(payload: AdminProductPayload): AdminProductPayload {
+  const name = payload.name.trim();
+  const category = payload.category.trim();
+  const image = payload.image?.trim();
+  const price = Number(payload.price);
+
+  if (!name) {
+    throw new Error("A termek neve kotelezo.");
+  }
+
+  if (!category) {
+    throw new Error("A kategoria neve kotelezo.");
+  }
+
+  if (!Number.isFinite(price)) {
+    throw new Error("Az ar ervenytelen.");
+  }
+
+  if (!Number.isInteger(price) || price < 0) {
+    throw new Error("Az ar csak nem negativ egesz szam lehet.");
+  }
+
+  return {
+    name,
+    category,
+    price,
+    image: image || undefined,
+  };
+}
 
 export function AdminScreen({ onBack }: AdminScreenProps) {
+  const unsplashAccessKey = (
+    import.meta.env.VITE_UNSPLASH_ACCESS_KEY as string | undefined
+  )?.trim();
   const [tab, setTab] = useState<AdminTab>("products");
   const [products, setProducts] = useState<Product[]>([]);
   const [users, setUsers] = useState<AdminUserResponse[]>([]);
+  const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<AdminProductPayload | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<OrderResponse | null>(null);
+  const [isOrderDetailLoading, setIsOrderDetailLoading] = useState(false);
+  const [isUnsplashLoading, setIsUnsplashLoading] = useState(false);
 
   const money = useMemo(
     () => new Intl.NumberFormat("hu-HU", { style: "currency", currency: "HUF" }),
+    [],
+  );
+  const dateTime = useMemo(
+    () =>
+      new Intl.DateTimeFormat("hu-HU", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     [],
   );
 
@@ -27,13 +82,15 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
     const load = async () => {
       try {
         setLoading(true);
-        const [productsData, usersData] = await Promise.all([
+        const [productsData, usersData, ordersData] = await Promise.all([
           endpoints.admin.products.list(),
           endpoints.admin.users.list(),
+          endpoints.admin.orders.list(),
         ]);
         if (isMounted) {
           setProducts(productsData);
           setUsers(usersData);
+          setOrders(ordersData);
           setError(null);
         }
       } catch (err) {
@@ -56,12 +113,26 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
 
   const handleCreate = async () => {
     try {
-      const payload: AdminProductPayload = {
+      const draftPayload: AdminProductPayload = {
         name: "Új termék",
         price: 990,
         category: "Kávé",
         image: "",
       };
+
+      const payload = normalizeProductPayload(draftPayload);
+
+      if (unsplashAccessKey) {
+        const imageFromUnsplash = await fetchUnsplashImageUrl(
+          `${payload.name} ${payload.category}`,
+          unsplashAccessKey,
+        );
+
+        if (imageFromUnsplash) {
+          payload.image = imageFromUnsplash;
+        }
+      }
+
       const created = await endpoints.admin.products.create(payload);
       setProducts((prev) => [created, ...prev]);
     } catch (err) {
@@ -94,7 +165,8 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
     }
 
     try {
-      const updated = await endpoints.admin.products.update(id, editDraft);
+      const payload = normalizeProductPayload(editDraft);
+      const updated = await endpoints.admin.products.update(id, payload);
       setProducts((prev) => prev.map((item) => (item.id === id ? updated : item)));
       handleCancelEdit();
     } catch (err) {
@@ -117,6 +189,53 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
       setUsers((prev) => prev.map((user) => (user.id === id ? updated : user)));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ismeretlen hiba");
+    }
+  };
+
+  const handleOrderDetail = async (id: string) => {
+    try {
+      setIsOrderDetailLoading(true);
+      const order = await endpoints.admin.orders.byId(id);
+      setSelectedOrder(order);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ismeretlen hiba");
+    } finally {
+      setIsOrderDetailLoading(false);
+    }
+  };
+
+  const handleUnsplashImage = async () => {
+    if (!editDraft) {
+      return;
+    }
+
+    if (!unsplashAccessKey) {
+      setError("A VITE_UNSPLASH_ACCESS_KEY nincs beallitva.");
+      return;
+    }
+
+    try {
+      setIsUnsplashLoading(true);
+      setError(null);
+      const query = `${editDraft.name} ${editDraft.category}`.trim();
+
+      if (!query) {
+        setError("Adj meg termeknevet vagy kategoriat a kepkereseshez.");
+        return;
+      }
+
+      const imageUrl = await fetchUnsplashImageUrl(query, unsplashAccessKey);
+
+      if (!imageUrl) {
+        setError("Nem talalhato megfelelo kep az Unsplash-en.");
+        return;
+      }
+
+      setEditDraft((prev) => (prev ? { ...prev, image: imageUrl } : prev));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ismeretlen hiba");
+    } finally {
+      setIsUnsplashLoading(false);
     }
   };
 
@@ -169,6 +288,16 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
             >
               Felhasználók
             </button>
+            <button
+              onClick={() => setTab("orders")}
+              className={`px-4 py-2 rounded-xl border transition-colors ${
+                tab === "orders"
+                  ? "border-indigo-200 bg-indigo-50 text-indigo-700"
+                  : "border-gray-200 text-gray-600"
+              }`}
+            >
+              Rendelések
+            </button>
           </div>
 
           {loading ? (
@@ -188,8 +317,13 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
                       />
                       <input
                         type="number"
+                        min={0}
+                        step={1}
                         value={editDraft.price}
-                        onChange={(event) => handleEditChange("price", Number(event.target.value))}
+                        onChange={(event) => {
+                          const value = event.target.value.replace(",", ".");
+                          handleEditChange("price", value === "" ? Number.NaN : Number(value));
+                        }}
                         className="rounded-xl border border-gray-200 px-3 py-2"
                       />
                       <input
@@ -197,12 +331,32 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
                         onChange={(event) => handleEditChange("category", event.target.value)}
                         className="rounded-xl border border-gray-200 px-3 py-2"
                       />
-                      <input
-                        value={editDraft.image ?? ""}
-                        onChange={(event) => handleEditChange("image", event.target.value)}
-                        className="rounded-xl border border-gray-200 px-3 py-2"
-                        placeholder="Kép URL"
-                      />
+
+                      <div className="sm:col-span-4 grid gap-3 sm:grid-cols-[1fr_auto]">
+                        <input
+                          value={editDraft.image ?? ""}
+                          readOnly
+                          className="rounded-xl border border-gray-200 px-3 py-2 bg-gray-50 text-gray-600"
+                          placeholder="Unsplash kep URL automatikusan"
+                        />
+                        <button
+                          onClick={handleUnsplashImage}
+                          disabled={isUnsplashLoading}
+                          className="px-3 py-2 rounded-lg border border-indigo-200 text-indigo-600 text-sm disabled:opacity-60"
+                        >
+                          {isUnsplashLoading ? "Kereses..." : "Unsplash kep"}
+                        </button>
+                      </div>
+
+                      {editDraft.image && (
+                        <div className="sm:col-span-4">
+                          <img
+                            src={editDraft.image}
+                            alt={editDraft.name}
+                            className="h-24 w-24 object-cover rounded-lg border border-gray-200"
+                          />
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div>
@@ -249,7 +403,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
                 </div>
               ))}
             </div>
-          ) : (
+          ) : tab === "users" ? (
             <div className="divide-y divide-gray-200">
               {users.map((user) => (
                 <div
@@ -273,6 +427,52 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
                   </div>
                 </div>
               ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {orders.length === 0 ? (
+                <p className="text-gray-500">Nincs megjelenitheto rendeles.</p>
+              ) : (
+                <div className="divide-y divide-gray-200">
+                  {orders.map((order) => (
+                    <div
+                      key={order.id}
+                      className="py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div>
+                        <p className="font-medium">Rendelés #{order.id.slice(0, 8)}</p>
+                        <p className="text-sm text-gray-500">
+                          {dateTime.format(new Date(order.createdAt))}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <p className="font-medium">{money.format(order.total)}</p>
+                        <button
+                          onClick={() => handleOrderDetail(order.id)}
+                          className="px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                        >
+                          Részletek
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {isOrderDetailLoading && (
+                <p className="text-gray-500">Rendeles reszletek betoltese...</p>
+              )}
+
+              {selectedOrder && !isOrderDetailLoading && (
+                <div className="rounded-2xl border border-gray-200 p-4">
+                  <p className="text-sm text-gray-500">Kiválasztott rendelés</p>
+                  <p className="mt-2 font-medium break-all">{selectedOrder.id}</p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {dateTime.format(new Date(selectedOrder.createdAt))}
+                  </p>
+                  <p className="mt-3">Végösszeg: {money.format(selectedOrder.total)}</p>
+                </div>
+              )}
             </div>
           )}
         </div>

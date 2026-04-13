@@ -1,95 +1,82 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
-import { useGoogleLogin, TokenResponse } from "@react-oauth/google";
-import { Header } from "./components/Header";
-import { OrderingScreen } from "./components/OrderingScreen";
-import { CheckoutScreen } from "./components/CheckoutScreen";
 import { CartItem } from "./components/CartPanel";
-import { LoginScreen } from "./components/LoginScreen";
-import { ProfileScreen } from "./components/ProfileScreen";
-import { RegistrationPayload, RegistrationScreen } from "./components/RegistrationScreen";
-import { AdminScreen } from "./components/AdminScreen";
-import { endpoints } from "./lib/endpoints";
-
-function AppLayout({
-  children,
-  onProfile,
-  onAdmin,
-  showAdmin,
-}: {
-  children: React.ReactNode;
-  onProfile: () => void;
-  onAdmin?: () => void;
-  showAdmin?: boolean;
-}) {
-  return (
-    <div className="size-full flex flex-col bg-gray-50">
-      <Header onProfile={onProfile} onAdmin={onAdmin} showAdmin={showAdmin} />
-      {children}
-    </div>
-  );
-}
+import { OrderingPage } from "./pages/OrderingPage";
+import { CheckoutPage } from "./pages/CheckoutPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { AdminPage } from "./pages/AdminPage";
+import { LoginPage } from "./pages/LoginPage";
+import { RegistrationPage } from "./pages/RegistrationPage";
+import {
+  clearAccessToken,
+  fetchCurrentUser,
+  getAccessToken,
+  logoutCurrentUser,
+  saveAccessToken,
+  type AuthSession,
+} from "./services/authService";
+import { useAuthStore } from "./stores/authStore";
 
 export default function App() {
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [checkoutItems, setCheckoutItems] = useState<CartItem[]>([]);
-  const [user, setUser] = useState<{ name?: string; email?: string; role?: string }>({});
-  const googleEnabled = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim());
-  const adminEmail = import.meta.env.VITE_ADMIN_EMAIL?.trim().toLowerCase();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
+  const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
+  const updateUser = useAuthStore((state) => state.updateUser);
+  const clearAuth = useAuthStore((state) => state.clearAuth);
 
-  const fetchGoogleUser = async (token: TokenResponse) => {
-    const response = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-      headers: {
-        Authorization: `Bearer ${token.access_token}`,
-      },
-    });
+  const accessToken = getAccessToken();
+  const meQuery = useQuery({
+    queryKey: ["auth", "me", accessToken],
+    queryFn: fetchCurrentUser,
+    enabled: hasHydrated && Boolean(accessToken),
+    retry: false,
+  });
 
-    if (!response.ok) {
+  useEffect(() => {
+    if (!hasHydrated) {
       return;
     }
 
-    const data: { name?: string; email?: string } = await response.json();
-    const role = adminEmail && data.email?.toLowerCase() === adminEmail ? "admin" : "staff";
-    setUser({ name: data.name, email: data.email, role });
-    localStorage.setItem("auth_token", token.access_token);
-  };
-
-  const handleLogin = async (payload: { email: string; password: string }) => {
-    const authResult = await endpoints.auth.login(payload);
-
-    localStorage.setItem("auth_token", authResult.accessToken);
-    setUser({
-      name: authResult.user.name,
-      email: authResult.user.email,
-      role: authResult.user.role === "ADMIN" ? "admin" : "staff",
-    });
-    setIsAuthenticated(true);
-    navigate("/ordering");
-  };
-
-  const handleRegister = async (payload?: RegistrationPayload) => {
-    if (payload && "access_token" in payload) {
-      await fetchGoogleUser(payload);
-    } else if (payload) {
-      const authResult = await endpoints.auth.register(payload);
-      localStorage.setItem("auth_token", authResult.accessToken);
-      setUser({
-        name: authResult.user.name,
-        email: authResult.user.email,
-        role: authResult.user.role === "ADMIN" ? "admin" : "staff",
-      });
+    if (!accessToken) {
+      clearAuth();
     }
-    setIsAuthenticated(true);
+  }, [hasHydrated, accessToken, clearAuth]);
+
+  useEffect(() => {
+    if (!hasHydrated || !accessToken) {
+      return;
+    }
+
+    if (meQuery.isSuccess) {
+      setAuthenticated(meQuery.data);
+    }
+
+    if (meQuery.isError) {
+      clearAccessToken();
+      clearAuth();
+      navigate("/login", { replace: true });
+    }
+  }, [
+    hasHydrated,
+    accessToken,
+    meQuery.isSuccess,
+    meQuery.isError,
+    meQuery.data,
+    setAuthenticated,
+    clearAuth,
+    navigate,
+  ]);
+
+  const isAuthLoading = !hasHydrated || (Boolean(accessToken) && meQuery.isPending);
+
+  const handleAuthenticated = ({ accessToken, user: authenticatedUser }: AuthSession) => {
+    saveAccessToken(accessToken);
+    setAuthenticated(authenticatedUser);
     navigate("/ordering");
-  };
-
-  const handleGoToRegister = () => {
-    navigate("/register");
-  };
-
-  const handleGoToLogin = () => {
-    navigate("/login");
   };
 
   const handleCheckout = (items: CartItem[]) => {
@@ -105,12 +92,19 @@ export default function App() {
     navigate("/admin");
   };
 
-  const handleLogout = () => {
-    setCheckoutItems([]);
-    setUser({});
-    setIsAuthenticated(false);
-    localStorage.removeItem("auth_token");
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      if (getAccessToken()) {
+        await logoutCurrentUser();
+      }
+    } catch {
+      // Local cleanup should proceed even when logout endpoint fails.
+    } finally {
+      setCheckoutItems([]);
+      clearAuth();
+      clearAccessToken();
+      navigate("/login");
+    }
   };
 
   const handleBack = () => {
@@ -121,6 +115,14 @@ export default function App() {
     setCheckoutItems([]);
     navigate("/ordering");
   };
+
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500">Betoltes...</p>
+      </div>
+    );
+  }
 
   return (
     <Routes>
@@ -133,20 +135,8 @@ export default function App() {
         element={
           isAuthenticated ? (
             <Navigate to="/ordering" replace />
-          ) : googleEnabled ? (
-            <LoginWithGoogle
-              onLogin={handleLogin}
-              onRegister={handleGoToRegister}
-              onGoogleSuccess={handleRegister}
-              googleEnabled={googleEnabled}
-            />
           ) : (
-            <LoginScreen
-              onLogin={handleLogin}
-              onRegister={handleGoToRegister}
-              onGoogleLogin={() => {}}
-              googleEnabled={false}
-            />
+            <LoginPage onAuthenticated={handleAuthenticated} />
           )
         }
       />
@@ -156,11 +146,7 @@ export default function App() {
           isAuthenticated ? (
             <Navigate to="/ordering" replace />
           ) : (
-            <RegistrationScreen
-              onRegister={handleRegister}
-              onBackToLogin={handleGoToLogin}
-              googleEnabled={googleEnabled}
-            />
+            <RegistrationPage onAuthenticated={handleAuthenticated} />
           )
         }
       />
@@ -168,13 +154,12 @@ export default function App() {
         path="/ordering"
         element={
           isAuthenticated ? (
-            <AppLayout
+            <OrderingPage
+              onCheckout={handleCheckout}
               onProfile={handleProfile}
               onAdmin={handleAdmin}
-              showAdmin={user.role === "admin"}
-            >
-              <OrderingScreen onCheckout={handleCheckout} />
-            </AppLayout>
+              showAdmin={user?.role === "admin"}
+            />
           ) : (
             <Navigate to="/login" replace />
           )
@@ -184,17 +169,14 @@ export default function App() {
         path="/checkout"
         element={
           isAuthenticated ? (
-            <AppLayout
+            <CheckoutPage
+              items={checkoutItems}
+              onBack={handleBack}
+              onComplete={handleComplete}
               onProfile={handleProfile}
               onAdmin={handleAdmin}
-              showAdmin={user.role === "admin"}
-            >
-              <CheckoutScreen
-                items={checkoutItems}
-                onBack={handleBack}
-                onComplete={handleComplete}
-              />
-            </AppLayout>
+              showAdmin={user?.role === "admin"}
+            />
           ) : (
             <Navigate to="/login" replace />
           )
@@ -203,14 +185,16 @@ export default function App() {
       <Route
         path="/profile"
         element={
-          isAuthenticated ? (
-            <AppLayout
+          isAuthenticated && user ? (
+            <ProfilePage
+              user={user}
+              onBack={handleBack}
+              onLogout={handleLogout}
+              onUserUpdated={updateUser}
               onProfile={handleProfile}
               onAdmin={handleAdmin}
-              showAdmin={user.role === "admin"}
-            >
-              <ProfileScreen onBack={handleBack} onLogout={handleLogout} user={user} />
-            </AppLayout>
+              showAdmin={user?.role === "admin"}
+            />
           ) : (
             <Navigate to="/login" replace />
           )
@@ -219,10 +203,8 @@ export default function App() {
       <Route
         path="/admin"
         element={
-          isAuthenticated && user.role === "admin" ? (
-            <AppLayout onProfile={handleProfile} onAdmin={handleAdmin} showAdmin>
-              <AdminScreen onBack={handleBack} />
-            </AppLayout>
+          isAuthenticated && user?.role === "admin" ? (
+            <AdminPage onBack={handleBack} onProfile={handleProfile} onAdmin={handleAdmin} />
           ) : (
             <Navigate to="/ordering" replace />
           )
@@ -230,33 +212,5 @@ export default function App() {
       />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
-  );
-}
-
-function LoginWithGoogle({
-  onLogin,
-  onRegister,
-  onGoogleSuccess,
-  googleEnabled,
-}: {
-  onLogin: (payload: { email: string }) => void;
-  onRegister: () => void;
-  onGoogleSuccess: (token: TokenResponse) => void;
-  googleEnabled: boolean;
-}) {
-  const redirectUri = window.location.origin;
-  const googleLogin = useGoogleLogin({
-    onSuccess: (tokenResponse) => onGoogleSuccess(tokenResponse),
-    redirect_uri: redirectUri,
-    ux_mode: "popup",
-  });
-
-  return (
-    <LoginScreen
-      onLogin={onLogin}
-      onRegister={onRegister}
-      onGoogleLogin={() => googleLogin()}
-      googleEnabled={googleEnabled}
-    />
   );
 }

@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   ConflictException,
   InternalServerErrorException,
+  NotFoundException,
 } from "@nestjs/common";
 import { type LoginInput, type RegisterInput } from "@orderiq/types";
 import { JwtService } from "@nestjs/jwt";
@@ -17,6 +18,8 @@ type SafeUser = {
   name: string;
   role: Role;
   providers: AuthProvider[];
+  createdAt: string;
+  updatedAt: string;
 };
 
 type AuthResult = {
@@ -221,6 +224,43 @@ export class AuthService {
     return this.buildAuthResult(createdUser);
   }
 
+  async getProfile(userId: string): Promise<SafeUser> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { identities: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException("A felhasználó nem található.");
+    }
+
+    return this.toSafeUser(user);
+  }
+
+  async updateProfile(userId: string, input: { name: string }): Promise<SafeUser> {
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: input.name,
+      },
+      include: { identities: true },
+    });
+
+    return this.toSafeUser(updatedUser);
+  }
+
+  private toSafeUser(user: User & { identities: Array<{ provider: AuthProvider }> }): SafeUser {
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      providers: user.identities.map((identity) => identity.provider),
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+    };
+  }
+
   private buildAuthResult(
     user: User & { identities: Array<{ provider: AuthProvider }> },
   ): AuthResult {
@@ -232,13 +272,7 @@ export class AuthService {
 
     return {
       accessToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        providers: user.identities.map((identity) => identity.provider),
-      },
+      user: this.toSafeUser(user),
     };
   }
 }

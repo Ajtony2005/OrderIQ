@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CartItem } from "./CartPanel";
 import { ArrowLeftIcon, BanknoteIcon, CheckIcon, CreditCardIcon, SmartphoneIcon } from "./icons";
+import { endpoints } from "../lib/endpoints";
 
 interface CheckoutScreenProps {
   items: CartItem[];
@@ -15,6 +16,8 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>(null);
   const [selectedTip, setSelectedTip] = useState<number>(0);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const tax = subtotal * 0.08;
@@ -32,11 +35,36 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
     { label: "15%", value: 0.15 },
   ];
 
-  const handleConfirmPayment = () => {
-    setShowSuccess(true);
-    setTimeout(() => {
-      onComplete();
-    }, 2000);
+  const handleConfirmPayment = async () => {
+    if (!selectedPayment || isSubmittingPayment || items.length === 0) {
+      return;
+    }
+
+    setIsSubmittingPayment(true);
+    setPaymentError(null);
+
+    try {
+      const createdOrder = await endpoints.orders.create({
+        items: items.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+        })),
+        tipPercent: selectedTip,
+        paymentMethod: selectedPayment,
+      });
+
+      await Promise.all([endpoints.orders.byId(createdOrder.id), endpoints.orders.list()]);
+
+      setShowSuccess(true);
+      setTimeout(() => {
+        onComplete();
+      }, 2000);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Sikertelen rendeles rogzitese.";
+      setPaymentError(message);
+    } finally {
+      setIsSubmittingPayment(false);
+    }
   };
 
   return (
@@ -232,16 +260,20 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
 
             <div className="bg-white border-t border-gray-200 p-6">
               <div className="max-w-2xl mx-auto">
+                {paymentError && <p className="mb-3 text-sm text-red-600">{paymentError}</p>}
                 <button
                   onClick={handleConfirmPayment}
-                  disabled={!selectedPayment}
+                  disabled={!selectedPayment || isSubmittingPayment || items.length === 0}
                   className="w-full py-5 rounded-xl transition-all touch-none disabled:opacity-50 disabled:cursor-not-allowed min-h-[64px]"
                   style={{
-                    backgroundColor: selectedPayment ? "var(--brand-primary)" : "#e5e7eb",
-                    color: selectedPayment ? "white" : "#9ca3af",
+                    backgroundColor:
+                      selectedPayment && !isSubmittingPayment ? "var(--brand-primary)" : "#e5e7eb",
+                    color: selectedPayment && !isSubmittingPayment ? "white" : "#9ca3af",
                   }}
                 >
-                  Fizetés megerősítése - {money.format(total)}
+                  {isSubmittingPayment
+                    ? "Rendeles rogzitese..."
+                    : `Fizetes megerositese - ${money.format(total)}`}
                 </button>
               </div>
             </div>

@@ -2,13 +2,17 @@ import { apiRequest } from "./api";
 
 export interface AuthResponse {
   accessToken: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: "ADMIN" | "USER" | "KITCHEN";
-    providers: Array<"PASSWORD" | "GOOGLE">;
-  };
+  user: AuthUser;
+}
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  role: "ADMIN" | "USER" | "KITCHEN";
+  providers: Array<"PASSWORD" | "GOOGLE">;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface LoginPayload {
@@ -23,7 +27,11 @@ export interface RegisterPayload {
 }
 
 export interface GoogleAuthPayload {
-  accessToken: string;
+  idToken: string;
+}
+
+export interface UpdateProfilePayload {
+  name: string;
 }
 
 export interface Product {
@@ -87,7 +95,12 @@ export const endpoints = {
         method: "POST",
         body: JSON.stringify(payload),
       }),
-    me: () => apiRequest<AuthResponse["user"]>("/auth/me"),
+    me: () => apiRequest<AuthUser>("/auth/me"),
+    updateMe: (payload: UpdateProfilePayload) =>
+      apiRequest<AuthUser>("/auth/me", {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      }),
     logout: () => apiRequest<void>("/auth/logout", { method: "POST" }),
   },
   catalog: {

@@ -2,15 +2,26 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   Req,
   UseGuards,
 } from "@nestjs/common";
 import { googleLoginSchema, type GoogleLoginInput, type RegisterInput } from "@orderiq/types";
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from "@nestjs/swagger";
+import { z } from "zod";
 import { AuthService } from "./auth.service";
+import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { LocalLoginGuard } from "./guards/local-login.guard";
 import { LocalRegisterGuard } from "./guards/local-register.guard";
 
@@ -21,7 +32,7 @@ const authResponseOpenApiSchema = {
     accessToken: { type: "string" },
     user: {
       type: "object",
-      required: ["id", "email", "name", "role", "providers"],
+      required: ["id", "email", "name", "role", "providers", "createdAt", "updatedAt"],
       properties: {
         id: { type: "string", format: "uuid" },
         email: { type: "string", format: "email" },
@@ -31,9 +42,23 @@ const authResponseOpenApiSchema = {
           type: "array",
           items: { type: "string", enum: ["PASSWORD", "GOOGLE"] },
         },
+        createdAt: { type: "string", format: "date-time" },
+        updatedAt: { type: "string", format: "date-time" },
       },
     },
   },
+};
+
+const updateProfileSchema = z.object({
+  name: z.string().trim().min(2).max(100),
+});
+
+type AuthenticatedRequest = {
+  user: {
+    userId: string;
+    email: string;
+    role: "ADMIN" | "USER" | "KITCHEN";
+  };
 };
 
 @ApiTags("auth")
@@ -105,6 +130,54 @@ export class AuthController {
     try {
       const parsed: GoogleLoginInput = googleLoginSchema.parse(body);
       return await this.authService.loginWithGoogle(parsed.idToken);
+    } catch (error) {
+      this.throwIfValidationError(error);
+      throw error;
+    }
+  }
+
+  @Post("logout")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth("access-token")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: "Kijelentkezes" })
+  async logout(): Promise<void> {
+    return;
+  }
+
+  @Get("me")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth("access-token")
+  @ApiOperation({ summary: "Bejelentkezett felhasználó adatainak lekérése" })
+  @ApiOkResponse({
+    description: "Sikeres profil lekérés",
+    schema: authResponseOpenApiSchema.properties.user,
+  })
+  async me(@Req() req: AuthenticatedRequest) {
+    return this.authService.getProfile(req.user.userId);
+  }
+
+  @Patch("me")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth("access-token")
+  @ApiOperation({ summary: "Profiladatok frissítése (email és jelszó kivételével)" })
+  @ApiBody({
+    schema: {
+      type: "object",
+      required: ["name"],
+      properties: {
+        name: { type: "string", minLength: 2, maxLength: 100 },
+      },
+    },
+  })
+  @ApiOkResponse({
+    description: "Sikeres profil frissítés",
+    schema: authResponseOpenApiSchema.properties.user,
+  })
+  async updateMe(@Req() req: AuthenticatedRequest, @Body() body: unknown) {
+    try {
+      const parsed = updateProfileSchema.parse(body);
+      return this.authService.updateProfile(req.user.userId, parsed);
     } catch (error) {
       this.throwIfValidationError(error);
       throw error;

@@ -28,8 +28,9 @@ A szerver alapértelmezett címe: `http://localhost:5177`
 Hozz létre egy `.env.local` fájlt a projekt gyökerében:
 
 ```env
-VITE_API_BASE_URL=/api/v1
+VITE_API_BASE_URL=http://127.0.0.1:3000/api/v1
 VITE_GOOGLE_CLIENT_ID=IDE_JON_A_GOOGLE_CLIENT_ID
+VITE_UNSPLASH_ACCESS_KEY=IDE_JON_A_UNSPLASH_ACCESS_KEY
 ```
 
 Másolhatod is a minta fájlt:
@@ -40,7 +41,7 @@ cp .env.example .env.local
 
 ### VITE_API_BASE_URL
 
-A backend API alap URL-je. Ha nincs megadva, az ajánlott érték: `/api/v1` (Vite proxyval a `http://localhost:3000` felé).
+A backend API alap URL-je. Lokális fejlesztéshez ajánlott érték: `http://127.0.0.1:3000/api/v1`.
 
 ### VITE_ADMIN_EMAIL
 
@@ -53,6 +54,10 @@ VITE_ADMIN_EMAIL=admin@orderiq.com
 ### VITE_GOOGLE_CLIENT_ID
 
 Google OAuth kliens ID a bejelentkezéshez/registrációhoz.
+
+### VITE_UNSPLASH_ACCESS_KEY
+
+Unsplash Access Key az admin termekkep automatikus kivalasztasahoz.
 
 ## Google OAuth beállítás
 
@@ -135,7 +140,7 @@ Ez a dokumentum leírja a frontend által elvárt backend endpointokat, a reques
 
 ## Alapok
 
-- API base URL: `/api/v1` (Vite proxy a `http://localhost:3000` felé)
+- API base URL: `http://127.0.0.1:3000/api/v1`
 - Auth: Bearer token a `Authorization` headerben
   - `Authorization: Bearer <token>`
 - JSON formátum
@@ -379,4 +384,4 @@ Minden admin endpoint **csak admin szerepkörrel** legyen elérhető.
 
 - A frontend automatikusan hozzáadja a `Authorization` header-t, ha van `auth_token` a localStorage-ben.
 - Ha a backend JWT-t használ, a token payload-ban szerepeljen a `role` mező (`admin` / `staff`).
-- CORS helyett dev környezetben Vite proxy megy `/api` útvonallal.
+- Dev környezetben a frontend közvetlenül a backend URL-t hívja, ezért a backend CORS beállítása szükséges.
