@@ -44,13 +44,13 @@ Az OrderIQ célja egy olyan egységes rendszer biztosítása, amely egy vendégl
 
 ## Technológiai stack
 
-| Terület | Technológia |
-| --- | --- |
-| Frontend | React 19, Vite 6, TypeScript, React Router, TanStack Query, Zustand, Framer Motion, Tailwind CSS 4 |
-| Backend | NestJS 11, Fastify, Prisma 6, Passport, JWT, Zod |
-| Adatbázis | PostgreSQL 16 |
-| Infrastruktúra | Docker Compose, Caddy, Nginx |
-| Package manager | Yarn 1.22.x workspace monorepo |
+| Terület         | Technológia                                                                                        |
+| --------------- | -------------------------------------------------------------------------------------------------- |
+| Frontend        | React 19, Vite 6, TypeScript, React Router, TanStack Query, Zustand, Framer Motion, Tailwind CSS 4 |
+| Backend         | NestJS 11, Fastify, Prisma 6, Passport, JWT, Zod                                                   |
+| Adatbázis       | PostgreSQL 16                                                                                      |
+| Infrastruktúra  | Docker Compose, Caddy, Nginx                                                                       |
+| Package manager | Yarn 1.22.x workspace monorepo                                                                     |
 
 ## Repository struktúra
 
@@ -343,41 +343,41 @@ Megjegyzés: a Vite dev proxy a `/api` prefixű hívásokat a `http://localhost:
 
 ### Gyökér `.env` Docker Compose-hoz
 
-| Változó | Jelentés | Alapértelmezett |
-| --- | --- | --- |
-| `POSTGRES_DB` | PostgreSQL adatbázis neve | `orderiq` |
-| `POSTGRES_USER` | PostgreSQL felhasználó | `postgres` |
-| `POSTGRES_PASSWORD` | PostgreSQL jelszó | `postgres` |
-| `DB_PORT` | Host oldali DB port | `5432` |
-| `API_PORT` | API port a konténerben | `3000` |
-| `APP_ENV` | futtatási környezet | `development` |
-| `DATABASE_URL` | backend adatbázis kapcsolat | `postgresql://postgres:postgres@db:5432/orderiq` |
-| `JWT_SECRET` | JWT aláíró kulcs | `change-me` |
-| `JWT_EXPIRES_IN` | token lejárat | `7d` |
-| `GOOGLE_CLIENT_ID` | backend Google auth client ID | üres |
-| `VITE_API_BASE_URL` | frontend API base URL, integrált használatnál ajánlott érték | `/api/v1` |
-| `VITE_GOOGLE_CLIENT_ID` | frontend Google client ID | üres |
-| `VITE_ADMIN_EMAIL` | admin email a frontend oldalon | `admin@orderiq.com` |
-| `CADDY_PORT` | publikus HTTP port | `80` |
+| Változó                 | Jelentés                                                     | Alapértelmezett                                  |
+| ----------------------- | ------------------------------------------------------------ | ------------------------------------------------ |
+| `POSTGRES_DB`           | PostgreSQL adatbázis neve                                    | `orderiq`                                        |
+| `POSTGRES_USER`         | PostgreSQL felhasználó                                       | `postgres`                                       |
+| `POSTGRES_PASSWORD`     | PostgreSQL jelszó                                            | `postgres`                                       |
+| `DB_PORT`               | Host oldali DB port                                          | `5432`                                           |
+| `API_PORT`              | API port a konténerben                                       | `3000`                                           |
+| `APP_ENV`               | futtatási környezet                                          | `development`                                    |
+| `DATABASE_URL`          | backend adatbázis kapcsolat                                  | `postgresql://postgres:postgres@db:5432/orderiq` |
+| `JWT_SECRET`            | JWT aláíró kulcs                                             | `change-me`                                      |
+| `JWT_EXPIRES_IN`        | token lejárat                                                | `7d`                                             |
+| `GOOGLE_CLIENT_ID`      | backend Google auth client ID                                | üres                                             |
+| `VITE_API_BASE_URL`     | frontend API base URL, integrált használatnál ajánlott érték | `/api/v1`                                        |
+| `VITE_GOOGLE_CLIENT_ID` | frontend Google client ID                                    | üres                                             |
+| `VITE_ADMIN_EMAIL`      | admin email a frontend oldalon                               | `admin@orderiq.com`                              |
+| `CADDY_PORT`            | publikus HTTP port                                           | `80`                                             |
 
 ### Backend-specifikus változók
 
-| Változó | Kötelező | Leírás |
-| --- | --- | --- |
-| `PORT` | igen | NestJS alkalmazás portja |
-| `APP_ENV` | igen | `development` esetén Swagger aktív |
-| `DATABASE_URL` | igen | PostgreSQL kapcsolat |
-| `JWT_SECRET` | igen | JWT titok |
-| `JWT_EXPIRES_IN` | nem | JWT lejárat, pl. `7d` |
-| `GOOGLE_CLIENT_ID` | nem | Google loginhoz szükséges |
+| Változó            | Kötelező | Leírás                             |
+| ------------------ | -------- | ---------------------------------- |
+| `PORT`             | igen     | NestJS alkalmazás portja           |
+| `APP_ENV`          | igen     | `development` esetén Swagger aktív |
+| `DATABASE_URL`     | igen     | PostgreSQL kapcsolat               |
+| `JWT_SECRET`       | igen     | JWT titok                          |
+| `JWT_EXPIRES_IN`   | nem      | JWT lejárat, pl. `7d`              |
+| `GOOGLE_CLIENT_ID` | nem      | Google loginhoz szükséges          |
 
 ### Frontend-specifikus változók
 
-| Változó | Kötelező | Leírás |
-| --- | --- | --- |
-| `VITE_API_BASE_URL` | igen | API base URL, ajánlott érték `/api/v1` |
-| `VITE_GOOGLE_CLIENT_ID` | nem | Google OAuth kliens ID |
-| `VITE_ADMIN_EMAIL` | nem | ez az email admin UI hozzáférést kap |
+| Változó                 | Kötelező | Leírás                                 |
+| ----------------------- | -------- | -------------------------------------- |
+| `VITE_API_BASE_URL`     | igen     | API base URL, ajánlott érték `/api/v1` |
+| `VITE_GOOGLE_CLIENT_ID` | nem      | Google OAuth kliens ID                 |
+| `VITE_ADMIN_EMAIL`      | nem      | ez az email admin UI hozzáférést kap   |
 
 ## Fontos parancsok
 
