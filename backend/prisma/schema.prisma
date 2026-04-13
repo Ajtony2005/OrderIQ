@@ -1,56 +1,56 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
-    ADMIN
-    USER
-    KITCHEN
+  ADMIN
+  USER
+  KITCHEN
 }
 
 enum AuthProvider {
-    PASSWORD
-    GOOGLE
+  PASSWORD
+  GOOGLE
 }
 
 model User {
-    id           String         @id @default(uuid())
-    email        String         @unique
-    name         String
-    passwordHash String?
-    role         Role           @default(USER)
-    identities   AuthIdentity[]
+  id           String         @id @default(uuid())
+  email        String         @unique
+  name         String
+  passwordHash String?
+  role         Role           @default(USER)
+  identities   AuthIdentity[]
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model AuthIdentity {
-    id             String       @id @default(uuid())
-    provider       AuthProvider
-    providerUserId String
-    userId         String
-    user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String       @id @default(uuid())
+  provider       AuthProvider
+  providerUserId String
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    @@unique([provider, providerUserId])
-    @@index([userId])
+  @@unique([provider, providerUserId])
+  @@index([userId])
 }
 
 model Product {
-    id          String  @id @default(uuid())
-    name        String
-    price       Int
-    category    String
-    isAvailable Boolean @default(true)
+  id          String  @id @default(uuid())
+  name        String
+  price       Int
+  category    String
+  isAvailable Boolean @default(true)
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

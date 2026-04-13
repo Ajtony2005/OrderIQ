@@ -34,11 +34,12 @@
   },
   "scripts": {
     "prisma:generate": "prisma generate",
+    "prisma:format": "prisma format",
     "predev": "yarn prisma:generate",
     "dev": "nest start --watch",
     "prebuild": "yarn prisma:generate",
     "build": "nest build",
     "lint": "eslint \"src/**/*.ts\"",
-    "format": "prettier --write \"src/**/*.ts\" \"prisma/**/*.prisma\""
+    "format": "prettier --write \"src/**/*.ts\" && yarn prisma:format"
   }
 }
