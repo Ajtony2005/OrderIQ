@@ -1,13 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CartItem } from "./CartPanel";
-import {
-  ArrowLeftIcon,
-  BanknoteIcon,
-  CheckIcon,
-  CreditCardIcon,
-  SmartphoneIcon,
-} from "./icons";
+import { ArrowLeftIcon, BanknoteIcon, CheckIcon, CreditCardIcon, SmartphoneIcon } from "./icons";
 
 interface CheckoutScreenProps {
   items: CartItem[];
@@ -140,9 +134,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                         className="py-4 px-4 rounded-xl border-2 transition-all touch-none min-h-[64px]"
                         style={{
                           borderColor:
-                            selectedTip === option.value
-                              ? "var(--brand-primary)"
-                              : "#e5e7eb",
+                            selectedTip === option.value ? "var(--brand-primary)" : "#e5e7eb",
                           backgroundColor: selectedTip === option.value ? "#eef2ff" : "white",
                           color: selectedTip === option.value ? "var(--brand-primary)" : "#6b7280",
                         }}
@@ -168,13 +160,14 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                       <BanknoteIcon
                         size={32}
                         className={
-                          selectedPayment === "cash" ? "text-[var(--brand-primary)]" : "text-gray-500"
+                          selectedPayment === "cash"
+                            ? "text-[var(--brand-primary)]"
+                            : "text-gray-500"
                         }
                       />
                       <span
                         style={{
-                          color:
-                            selectedPayment === "cash" ? "var(--brand-primary)" : "#6b7280",
+                          color: selectedPayment === "cash" ? "var(--brand-primary)" : "#6b7280",
                         }}
                       >
                         Készpénz
@@ -193,13 +186,14 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                       <CreditCardIcon
                         size={32}
                         className={
-                          selectedPayment === "card" ? "text-[var(--brand-primary)]" : "text-gray-500"
+                          selectedPayment === "card"
+                            ? "text-[var(--brand-primary)]"
+                            : "text-gray-500"
                         }
                       />
                       <span
                         style={{
-                          color:
-                            selectedPayment === "card" ? "var(--brand-primary)" : "#6b7280",
+                          color: selectedPayment === "card" ? "var(--brand-primary)" : "#6b7280",
                         }}
                       >
                         Kártya
@@ -225,8 +219,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                       />
                       <span
                         style={{
-                          color:
-                            selectedPayment === "digital" ? "var(--brand-primary)" : "#6b7280",
+                          color: selectedPayment === "digital" ? "var(--brand-primary)" : "#6b7280",
                         }}
                       >
                         Digitális

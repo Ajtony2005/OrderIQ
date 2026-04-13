@@ -33,18 +33,8 @@ export function Header({ onProfile, onAdmin, showAdmin }: HeaderProps) {
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <path
-              d="M5 7H19"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-            <path
-              d="M5 17H19"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
+            <path d="M5 7H19" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M5 17H19" stroke="white" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </div>
         <div>

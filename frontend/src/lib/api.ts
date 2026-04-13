@@ -1,12 +1,9 @@
-const defaultBaseUrl = "/api";
+const defaultBaseUrl = "/api/v1";
 
 export const API_BASE_URL =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() || defaultBaseUrl;
 
-export async function apiRequest<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
+export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem("auth_token");
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,

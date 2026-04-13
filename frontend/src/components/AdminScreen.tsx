@@ -252,7 +252,10 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
           ) : (
             <div className="divide-y divide-gray-200">
               {users.map((user) => (
-                <div key={user.id} className="py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div
+                  key={user.id}
+                  className="py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                >
                   <div>
                     <p className="font-medium">{user.name}</p>
                     <p className="text-sm text-gray-500">{user.email}</p>

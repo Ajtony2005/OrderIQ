@@ -6,11 +6,7 @@ interface CategoryTabsProps {
   onCategoryChange: (category: string) => void;
 }
 
-export function CategoryTabs({
-  categories,
-  activeCategory,
-  onCategoryChange,
-}: CategoryTabsProps) {
+export function CategoryTabs({ categories, activeCategory, onCategoryChange }: CategoryTabsProps) {
   return (
     <div className="flex gap-2 overflow-x-auto pb-1">
       {categories.map((category) => (

@@ -156,9 +156,7 @@ export function OrderingScreen({ onCheckout }: OrderingScreenProps) {
   const handleUpdateQuantity = (id: string, change: number) => {
     setCartItems((prev) =>
       prev
-        .map((item) =>
-          item.id === id ? { ...item, quantity: item.quantity + change } : item,
-        )
+        .map((item) => (item.id === id ? { ...item, quantity: item.quantity + change } : item))
         .filter((item) => item.quantity > 0),
     );
   };

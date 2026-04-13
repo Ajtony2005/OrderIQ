@@ -60,9 +60,7 @@ export function CartPanel({ items, onUpdateQuantity, onRemove, onCheckout }: Car
                   <div className="flex items-center gap-2 bg-gray-100 rounded-xl p-1">
                     <button
                       onClick={() =>
-                        item.quantity === 1
-                          ? onRemove(item.id)
-                          : onUpdateQuantity(item.id, -1)
+                        item.quantity === 1 ? onRemove(item.id) : onUpdateQuantity(item.id, -1)
                       }
                       className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-200 active:bg-gray-300 transition-colors touch-none"
                     >

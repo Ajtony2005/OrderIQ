@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useGoogleLogin, TokenResponse } from "@react-oauth/google";
 
 export type RegistrationPayload =
-  | { name: string; email: string }
+  | { name: string; email: string; password: string }
   | TokenResponse
   | undefined;
 
@@ -62,10 +62,29 @@ export function RegistrationScreen({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    onRegister({ name, email });
+
+    if (password !== confirmPassword) {
+      setErrorMessage("A két jelszó nem egyezik.");
+      return;
+    }
+
+    setErrorMessage(null);
+    setIsSubmitting(true);
+
+    try {
+      await onRegister({ name, email, password });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Sikertelen regisztráció. Próbáld újra.";
+      setErrorMessage(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -169,11 +188,18 @@ export function RegistrationScreen({
 
             <button
               type="submit"
+              disabled={isSubmitting}
               className="w-full rounded-xl py-3 text-white transition-all"
               style={{ backgroundColor: "var(--brand-primary)" }}
             >
-              Fiók létrehozása
+              {isSubmitting ? "Fiók létrehozása..." : "Fiók létrehozása"}
             </button>
+
+            {errorMessage && (
+              <p className="text-sm text-red-600" role="alert">
+                {errorMessage}
+              </p>
+            )}
           </form>
 
           <div className="mt-6 text-sm text-gray-500 text-center">

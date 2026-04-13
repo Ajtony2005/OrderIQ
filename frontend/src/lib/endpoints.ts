@@ -1,11 +1,13 @@
 import { apiRequest } from "./api";
 
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
   user: {
     id: string;
     name: string;
     email: string;
+    role: "ADMIN" | "USER" | "KITCHEN";
+    providers: Array<"PASSWORD" | "GOOGLE">;
   };
 }
 
@@ -114,8 +116,7 @@ export const endpoints = {
           method: "PUT",
           body: JSON.stringify(payload),
         }),
-      remove: (id: string) =>
-        apiRequest<void>(`/admin/products/${id}`, { method: "DELETE" }),
+      remove: (id: string) => apiRequest<void>(`/admin/products/${id}`, { method: "DELETE" }),
     },
     users: {
       list: () => apiRequest<AdminUserResponse[]>("/admin/users"),

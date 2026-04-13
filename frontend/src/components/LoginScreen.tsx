@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 interface LoginScreenProps {
-  onLogin: (payload: { email: string }) => void;
+  onLogin: (payload: { email: string; password: string }) => Promise<void>;
   onRegister: () => void;
   onGoogleLogin: () => void;
   googleEnabled: boolean;
@@ -15,10 +15,23 @@ export function LoginScreen({
 }: LoginScreenProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    onLogin({ email });
+    setErrorMessage(null);
+    setIsSubmitting(true);
+
+    try {
+      await onLogin({ email, password });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Sikertelen bejelentkezés. Próbáld újra.";
+      setErrorMessage(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -75,11 +88,18 @@ export function LoginScreen({
 
             <button
               type="submit"
+              disabled={isSubmitting}
               className="w-full rounded-xl py-3 text-white transition-all"
               style={{ backgroundColor: "var(--brand-primary)" }}
             >
-              Bejelentkezés
+              {isSubmitting ? "Bejelentkezés..." : "Bejelentkezés"}
             </button>
+
+            {errorMessage && (
+              <p className="text-sm text-red-600" role="alert">
+                {errorMessage}
+              </p>
+            )}
           </form>
 
           <div className="my-6 flex items-center gap-3 text-sm text-gray-400">

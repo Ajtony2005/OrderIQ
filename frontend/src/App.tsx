@@ -9,6 +9,7 @@ import { LoginScreen } from "./components/LoginScreen";
 import { ProfileScreen } from "./components/ProfileScreen";
 import { RegistrationPayload, RegistrationScreen } from "./components/RegistrationScreen";
 import { AdminScreen } from "./components/AdminScreen";
+import { endpoints } from "./lib/endpoints";
 
 function AppLayout({
   children,
@@ -54,11 +55,15 @@ export default function App() {
     localStorage.setItem("auth_token", token.access_token);
   };
 
-  const handleLogin = (payload: { email: string }) => {
-    const displayName = payload.email.split("@")[0] || "Felhasználó";
-    const role =
-      adminEmail && payload.email.toLowerCase() === adminEmail ? "admin" : "staff";
-    setUser({ name: displayName, email: payload.email, role });
+  const handleLogin = async (payload: { email: string; password: string }) => {
+    const authResult = await endpoints.auth.login(payload);
+
+    localStorage.setItem("auth_token", authResult.accessToken);
+    setUser({
+      name: authResult.user.name,
+      email: authResult.user.email,
+      role: authResult.user.role === "ADMIN" ? "admin" : "staff",
+    });
     setIsAuthenticated(true);
     navigate("/ordering");
   };
@@ -67,9 +72,13 @@ export default function App() {
     if (payload && "access_token" in payload) {
       await fetchGoogleUser(payload);
     } else if (payload) {
-      const role =
-        adminEmail && payload.email.toLowerCase() === adminEmail ? "admin" : "staff";
-      setUser({ name: payload.name, email: payload.email, role });
+      const authResult = await endpoints.auth.register(payload);
+      localStorage.setItem("auth_token", authResult.accessToken);
+      setUser({
+        name: authResult.user.name,
+        email: authResult.user.email,
+        role: authResult.user.role === "ADMIN" ? "admin" : "staff",
+      });
     }
     setIsAuthenticated(true);
     navigate("/ordering");
@@ -159,7 +168,11 @@ export default function App() {
         path="/ordering"
         element={
           isAuthenticated ? (
-            <AppLayout onProfile={handleProfile} onAdmin={handleAdmin} showAdmin={user.role === "admin"}>
+            <AppLayout
+              onProfile={handleProfile}
+              onAdmin={handleAdmin}
+              showAdmin={user.role === "admin"}
+            >
               <OrderingScreen onCheckout={handleCheckout} />
             </AppLayout>
           ) : (
@@ -171,7 +184,11 @@ export default function App() {
         path="/checkout"
         element={
           isAuthenticated ? (
-            <AppLayout onProfile={handleProfile} onAdmin={handleAdmin} showAdmin={user.role === "admin"}>
+            <AppLayout
+              onProfile={handleProfile}
+              onAdmin={handleAdmin}
+              showAdmin={user.role === "admin"}
+            >
               <CheckoutScreen
                 items={checkoutItems}
                 onBack={handleBack}
@@ -187,7 +204,11 @@ export default function App() {
         path="/profile"
         element={
           isAuthenticated ? (
-            <AppLayout onProfile={handleProfile} onAdmin={handleAdmin} showAdmin={user.role === "admin"}>
+            <AppLayout
+              onProfile={handleProfile}
+              onAdmin={handleAdmin}
+              showAdmin={user.role === "admin"}
+            >
               <ProfileScreen onBack={handleBack} onLogout={handleLogout} user={user} />
             </AppLayout>
           ) : (
