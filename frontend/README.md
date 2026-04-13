@@ -35,7 +35,7 @@ VITE_GOOGLE_CLIENT_ID=IDE_JON_A_GOOGLE_CLIENT_ID
 Másolhatod is a minta fájlt:
 
 ```bash
-cp .env.local.example .env.local
+cp .env.example .env.local
 ```
 
 ### VITE_API_BASE_URL
