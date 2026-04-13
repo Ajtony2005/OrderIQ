@@ -1,8 +1,83 @@
-generator client {
-    provider = "prisma-client-js"
+// 1. Data Source & Generator
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 2. Modellek
+
+model User {
+  id        String   @id @default(cuid()) // pl. "clrq9..." (String ID a specifikáció alapján)
+  name      String
+  email     String   @unique
+  password  String?  // Opcionális, mert Google auth-nál nem lesz jelszó
+  role      Role     @default(STAFF)
+  orders    Order[]  // A felhasználóhoz tartozó rendelések
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  products Product[]
+}
+
+model Product {
+  id         String      @id @default(cuid())
+  name       String
+  price      Int         // Int tökéletes a forinthoz (HUF)
+  image      String?
+  
+  categoryId String
+  category   Category    @relation(fields: [categoryId], references: [id])
+  
+  orderItems OrderItem[] // Kapcsolat a rendelési tételekhez
+  
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model Order {
+  id            String        @id @default(cuid())
+  total         Int
+  tipPercent    Float?        @default(0)
+  paymentMethod PaymentMethod @default(CARD)
+  
+  userId        String?       // Opcionális, ha anonim rendelés is lehetséges, ha nem, vedd ki a kérdőjelet
+  user          User?         @relation(fields: [userId], references: [id])
+  
+  items         OrderItem[]   // A rendelésben szereplő tételek
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+// Kapcsolótábla a Rendelés és a Termék közé (Mennyiség tárolására)
+model OrderItem {
+  id        String  @id @default(cuid())
+  quantity  Int     @default(1)
+  
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+// 3. Enumok
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+enum PaymentMethod {
+  CARD
+  CASH
 }
