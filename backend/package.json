@@ -39,7 +39,7 @@
     "prisma:generate": "prisma generate",
     "prisma:format": "prisma format",
     "dev": "nest start --watch",
-    "build": "nest build",
+    "build": "yarn prisma:generate && nest build",
     "lint": "eslint \"src/**/*.ts\"",
     "format": "prettier --write \"src/**/*.ts\" && yarn prisma:format"
   }
