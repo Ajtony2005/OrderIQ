@@ -12,10 +12,11 @@ interface CartPanelProps {
   items: CartItem[];
   onUpdateQuantity: (id: string, change: number) => void;
   onRemove: (id: string) => void;
+  onClear: () => void;
   onCheckout: () => void;
 }
 
-export function CartPanel({ items, onUpdateQuantity, onRemove, onCheckout }: CartPanelProps) {
+export function CartPanel({ items, onUpdateQuantity, onRemove, onClear, onCheckout }: CartPanelProps) {
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const tax = subtotal * 0.27;
   const total = subtotal + tax;
@@ -103,17 +104,26 @@ export function CartPanel({ items, onUpdateQuantity, onRemove, onCheckout }: Car
           </div>
         </div>
 
-        <button
-          onClick={onCheckout}
-          disabled={items.length === 0}
-          className="w-full py-4 rounded-xl transition-all touch-none disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px]"
-          style={{
-            backgroundColor: items.length > 0 ? "var(--brand-primary)" : "#e5e7eb",
-            color: items.length > 0 ? "white" : "#9ca3af",
-          }}
-        >
-          Fizetés
-        </button>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={onClear}
+            disabled={items.length === 0}
+            className="w-full py-4 rounded-xl border border-gray-300 bg-white text-gray-700 transition-colors hover:bg-gray-50 touch-none disabled:opacity-50 disabled:cursor-not-allowed min-h-14"
+          >
+            Kosár ürítése
+          </button>
+          <button
+            onClick={onCheckout}
+            disabled={items.length === 0}
+            className="w-full py-4 rounded-xl transition-all touch-none disabled:opacity-50 disabled:cursor-not-allowed min-h-14"
+            style={{
+              backgroundColor: items.length > 0 ? "var(--brand-primary)" : "#e5e7eb",
+              color: items.length > 0 ? "white" : "#9ca3af",
+            }}
+          >
+            Tovább a fizetéshez
+          </button>
+        </div>
       </div>
     </div>
   );

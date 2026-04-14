@@ -9,9 +9,9 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, onProfile, onAdmin, showAdmin }: AppLayoutProps) {
   return (
-    <div className="size-full flex flex-col bg-gray-50">
+    <div className="size-full min-h-0 flex flex-col bg-gray-50">
       <Header onProfile={onProfile} onAdmin={onAdmin} showAdmin={showAdmin} />
-      {children}
+      <main className="flex-1 min-h-0">{children}</main>
     </div>
   );
 }

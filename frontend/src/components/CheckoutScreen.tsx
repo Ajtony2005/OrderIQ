@@ -20,7 +20,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = subtotal * 0.08;
+  const tax = subtotal * 0.27;
   const tip = subtotal * selectedTip;
   const total = subtotal + tax + tip;
   const money = new Intl.NumberFormat("hu-HU", {
@@ -68,7 +68,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
   };
 
   return (
-    <div className="h-screen bg-gray-50 overflow-hidden">
+    <div className="h-full min-h-0 bg-gray-50 overflow-hidden">
       <AnimatePresence>
         {showSuccess ? (
           <motion.div
@@ -104,7 +104,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
             </motion.p>
           </motion.div>
         ) : (
-          <div className="h-full flex flex-col">
+          <div className="h-full min-h-0 flex flex-col">
             <div className="bg-white border-b border-gray-200 p-6 flex items-center gap-4">
               <button
                 onClick={onBack}
@@ -112,11 +112,22 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
               >
                 <ArrowLeftIcon size={24} />
               </button>
-              <h2>Fizetés</h2>
+              <div>
+                <h2>Fizetés</h2>
+                <p className="text-sm text-gray-500">2/2 - Véglegesítés</p>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-2xl mx-auto space-y-8">
+                <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
+                  <p className="text-sm font-medium text-blue-900">2/2 - Fizetés és jóváhagyás</p>
+                  <div className="mt-2 h-2 rounded-full bg-blue-100">
+                    <div className="h-full w-full rounded-full bg-blue-600" />
+                  </div>
+                  <p className="mt-2 text-xs text-blue-800">Még ellenőrizd a részleteket, utána véglegesítheted a rendelést.</p>
+                </div>
+
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
                   <h3 className="mb-4">Rendelés összegzése</h3>
                   <div className="space-y-3">
@@ -136,7 +147,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                       <span>{money.format(subtotal)}</span>
                     </div>
                     <div className="flex justify-between text-gray-600">
-                      <span>Áfa (8%)</span>
+                      <span>Áfa (27%)</span>
                       <span>{money.format(tax)}</span>
                     </div>
                     {tip > 0 && (
@@ -159,7 +170,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                       <button
                         key={option.value}
                         onClick={() => setSelectedTip(option.value)}
-                        className="py-4 px-4 rounded-xl border-2 transition-all touch-none min-h-[64px]"
+                        className="py-4 px-4 rounded-xl border-2 transition-all touch-none min-h-16"
                         style={{
                           borderColor:
                             selectedTip === option.value ? "var(--brand-primary)" : "#e5e7eb",
@@ -178,7 +189,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                   <div className="grid grid-cols-3 gap-4">
                     <button
                       onClick={() => setSelectedPayment("cash")}
-                      className="flex flex-col items-center gap-3 py-6 rounded-xl border-2 transition-all touch-none min-h-[120px]"
+                      className="flex flex-col items-center gap-3 py-6 rounded-xl border-2 transition-all touch-none min-h-30"
                       style={{
                         borderColor:
                           selectedPayment === "cash" ? "var(--brand-primary)" : "#e5e7eb",
@@ -189,7 +200,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                         size={32}
                         className={
                           selectedPayment === "cash"
-                            ? "text-[var(--brand-primary)]"
+                            ? "text-(--brand-primary)"
                             : "text-gray-500"
                         }
                       />
@@ -204,7 +215,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
 
                     <button
                       onClick={() => setSelectedPayment("card")}
-                      className="flex flex-col items-center gap-3 py-6 rounded-xl border-2 transition-all touch-none min-h-[120px]"
+                      className="flex flex-col items-center gap-3 py-6 rounded-xl border-2 transition-all touch-none min-h-30"
                       style={{
                         borderColor:
                           selectedPayment === "card" ? "var(--brand-primary)" : "#e5e7eb",
@@ -215,7 +226,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                         size={32}
                         className={
                           selectedPayment === "card"
-                            ? "text-[var(--brand-primary)]"
+                            ? "text-(--brand-primary)"
                             : "text-gray-500"
                         }
                       />
@@ -230,7 +241,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
 
                     <button
                       onClick={() => setSelectedPayment("digital")}
-                      className="flex flex-col items-center gap-3 py-6 rounded-xl border-2 transition-all touch-none min-h-[120px]"
+                      className="flex flex-col items-center gap-3 py-6 rounded-xl border-2 transition-all touch-none min-h-30"
                       style={{
                         borderColor:
                           selectedPayment === "digital" ? "var(--brand-primary)" : "#e5e7eb",
@@ -241,7 +252,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                         size={32}
                         className={
                           selectedPayment === "digital"
-                            ? "text-[var(--brand-primary)]"
+                            ? "text-(--brand-primary)"
                             : "text-gray-500"
                         }
                       />
@@ -261,20 +272,29 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
             <div className="bg-white border-t border-gray-200 p-6">
               <div className="max-w-2xl mx-auto">
                 {paymentError && <p className="mb-3 text-sm text-red-600">{paymentError}</p>}
-                <button
-                  onClick={handleConfirmPayment}
-                  disabled={!selectedPayment || isSubmittingPayment || items.length === 0}
-                  className="w-full py-5 rounded-xl transition-all touch-none disabled:opacity-50 disabled:cursor-not-allowed min-h-[64px]"
-                  style={{
-                    backgroundColor:
-                      selectedPayment && !isSubmittingPayment ? "var(--brand-primary)" : "#e5e7eb",
-                    color: selectedPayment && !isSubmittingPayment ? "white" : "#9ca3af",
-                  }}
-                >
-                  {isSubmittingPayment
-                    ? "Rendeles rogzitese..."
-                    : `Fizetes megerositese - ${money.format(total)}`}
-                </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    onClick={onBack}
+                    disabled={isSubmittingPayment}
+                    className="w-full py-5 rounded-xl border border-gray-300 bg-white text-gray-700 transition-colors hover:bg-gray-50 touch-none disabled:opacity-50 disabled:cursor-not-allowed min-h-16"
+                  >
+                    Vissza módosításhoz
+                  </button>
+                  <button
+                    onClick={handleConfirmPayment}
+                    disabled={!selectedPayment || isSubmittingPayment || items.length === 0}
+                    className="w-full py-5 rounded-xl transition-all touch-none disabled:opacity-50 disabled:cursor-not-allowed min-h-16"
+                    style={{
+                      backgroundColor:
+                        selectedPayment && !isSubmittingPayment ? "var(--brand-primary)" : "#e5e7eb",
+                      color: selectedPayment && !isSubmittingPayment ? "white" : "#9ca3af",
+                    }}
+                  >
+                    {isSubmittingPayment
+                      ? "Rendeles rogzitese..."
+                      : `Fizetes megerositese - ${money.format(total)}`}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

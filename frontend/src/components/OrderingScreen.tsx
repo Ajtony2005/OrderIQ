@@ -111,10 +111,21 @@ export function OrderingScreen({ onCheckout }: OrderingScreenProps) {
     }
   };
 
+  const handleClearCart = () => {
+    setCartItems([]);
+  };
+
   return (
-    <div className="flex h-screen">
+    <div className="flex h-full min-h-0">
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-6 border-b border-gray-200 space-y-4">
+          <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
+            <p className="text-sm font-medium text-blue-900">1/2 - Rendelés összeállítása</p>
+            <div className="mt-2 h-2 rounded-full bg-blue-100">
+              <div className="h-full w-1/2 rounded-full bg-blue-600" />
+            </div>
+            <p className="mt-2 text-xs text-blue-800">A következő lépésben fizetési módot választasz és jóváhagyod a rendelést.</p>
+          </div>
           <CategoryTabs
             categories={categoryNames}
             activeCategory={activeCategory}
@@ -146,11 +157,12 @@ export function OrderingScreen({ onCheckout }: OrderingScreenProps) {
         </div>
       </div>
 
-      <div className="w-[400px] flex-shrink-0">
+      <div className="w-100 shrink-0">
         <CartPanel
           items={cartItems}
           onUpdateQuantity={handleUpdateQuantity}
           onRemove={handleRemove}
+          onClear={handleClearCart}
           onCheckout={handleCheckout}
         />
       </div>
