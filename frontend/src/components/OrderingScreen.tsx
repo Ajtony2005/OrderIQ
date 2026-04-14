@@ -124,7 +124,9 @@ export function OrderingScreen({ onCheckout }: OrderingScreenProps) {
             <div className="mt-2 h-2 rounded-full bg-blue-100">
               <div className="h-full w-1/2 rounded-full bg-blue-600" />
             </div>
-            <p className="mt-2 text-xs text-blue-800">A következő lépésben fizetési módot választasz és jóváhagyod a rendelést.</p>
+            <p className="mt-2 text-xs text-blue-800">
+              A következő lépésben fizetési módot választasz és jóváhagyod a rendelést.
+            </p>
           </div>
           <CategoryTabs
             categories={categoryNames}

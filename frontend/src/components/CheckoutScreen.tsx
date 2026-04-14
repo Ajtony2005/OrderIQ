@@ -125,7 +125,9 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                   <div className="mt-2 h-2 rounded-full bg-blue-100">
                     <div className="h-full w-full rounded-full bg-blue-600" />
                   </div>
-                  <p className="mt-2 text-xs text-blue-800">Még ellenőrizd a részleteket, utána véglegesítheted a rendelést.</p>
+                  <p className="mt-2 text-xs text-blue-800">
+                    Még ellenőrizd a részleteket, utána véglegesítheted a rendelést.
+                  </p>
                 </div>
 
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
@@ -199,9 +201,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                       <BanknoteIcon
                         size={32}
                         className={
-                          selectedPayment === "cash"
-                            ? "text-(--brand-primary)"
-                            : "text-gray-500"
+                          selectedPayment === "cash" ? "text-(--brand-primary)" : "text-gray-500"
                         }
                       />
                       <span
@@ -225,9 +225,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                       <CreditCardIcon
                         size={32}
                         className={
-                          selectedPayment === "card"
-                            ? "text-(--brand-primary)"
-                            : "text-gray-500"
+                          selectedPayment === "card" ? "text-(--brand-primary)" : "text-gray-500"
                         }
                       />
                       <span
@@ -251,9 +249,7 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                       <SmartphoneIcon
                         size={32}
                         className={
-                          selectedPayment === "digital"
-                            ? "text-(--brand-primary)"
-                            : "text-gray-500"
+                          selectedPayment === "digital" ? "text-(--brand-primary)" : "text-gray-500"
                         }
                       />
                       <span
@@ -286,7 +282,9 @@ export function CheckoutScreen({ items, onBack, onComplete }: CheckoutScreenProp
                     className="w-full py-5 rounded-xl transition-all touch-none disabled:opacity-50 disabled:cursor-not-allowed min-h-16"
                     style={{
                       backgroundColor:
-                        selectedPayment && !isSubmittingPayment ? "var(--brand-primary)" : "#e5e7eb",
+                        selectedPayment && !isSubmittingPayment
+                          ? "var(--brand-primary)"
+                          : "#e5e7eb",
                       color: selectedPayment && !isSubmittingPayment ? "white" : "#9ca3af",
                     }}
                   >
