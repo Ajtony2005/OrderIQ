@@ -10,7 +10,15 @@ import {
   Req,
   UseGuards,
 } from "@nestjs/common";
-import { googleLoginSchema, type GoogleLoginInput, type RegisterInput } from "@orderiq/types";
+import {
+  authResponseSchema,
+  authUserSchema,
+  googleLoginSchema,
+  updateProfileSchema,
+  type GoogleLoginInput,
+  type RegisterInput,
+  type UpdateProfileInput,
+} from "@orderiq/types";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -19,7 +27,6 @@ import {
   ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
-import { z } from "zod";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { LocalLoginGuard } from "./guards/local-login.guard";
@@ -48,10 +55,6 @@ const authResponseOpenApiSchema = {
     },
   },
 };
-
-const updateProfileSchema = z.object({
-  name: z.string().trim().min(2).max(100),
-});
 
 type AuthenticatedRequest = {
   user: {
@@ -85,7 +88,7 @@ export class AuthController {
     schema: authResponseOpenApiSchema,
   })
   async register(@Req() req: { user: RegisterInput }) {
-    return this.authService.register(req.user);
+    return authResponseSchema.parse(await this.authService.register(req.user));
   }
 
   @Post("login")
@@ -107,7 +110,7 @@ export class AuthController {
     schema: authResponseOpenApiSchema,
   })
   async login(@Req() req: { user: unknown }) {
-    return req.user;
+    return authResponseSchema.parse(req.user);
   }
 
   @Post("google")
@@ -129,7 +132,7 @@ export class AuthController {
   async googleLogin(@Body() body: unknown) {
     try {
       const parsed: GoogleLoginInput = googleLoginSchema.parse(body);
-      return await this.authService.loginWithGoogle(parsed.idToken);
+      return authResponseSchema.parse(await this.authService.loginWithGoogle(parsed.idToken));
     } catch (error) {
       this.throwIfValidationError(error);
       throw error;
@@ -154,7 +157,7 @@ export class AuthController {
     schema: authResponseOpenApiSchema.properties.user,
   })
   async me(@Req() req: AuthenticatedRequest) {
-    return this.authService.getProfile(req.user.userId);
+    return authUserSchema.parse(await this.authService.getProfile(req.user.userId));
   }
 
   @Patch("me")
@@ -176,8 +179,8 @@ export class AuthController {
   })
   async updateMe(@Req() req: AuthenticatedRequest, @Body() body: unknown) {
     try {
-      const parsed = updateProfileSchema.parse(body);
-      return this.authService.updateProfile(req.user.userId, parsed);
+      const parsed: UpdateProfileInput = updateProfileSchema.parse(body);
+      return authUserSchema.parse(await this.authService.updateProfile(req.user.userId, parsed));
     } catch (error) {
       this.throwIfValidationError(error);
       throw error;

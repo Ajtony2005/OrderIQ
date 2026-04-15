@@ -1,33 +1,20 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  type AdminProductPayload as SharedAdminProductPayload,
+  type AdminProductResponse as SharedAdminProductResponse,
+  type AdminUserResponse as SharedAdminUserResponse,
+  type OrderResponse as SharedOrderResponse,
+  type UpdateUserRolePayload as SharedUpdateUserRolePayload,
+} from "@orderiq/types";
 import { Prisma, Role } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
-import { OrderResponse, OrdersService } from "../orders/orders.service";
+import { OrdersService } from "../orders/orders.service";
 
-export interface AdminProductPayload {
-  name: string;
-  price: number;
-  category: string;
-  image?: string;
-}
-
-export interface AdminProductResponse {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  image: string;
-}
-
-export interface AdminUserResponse {
-  id: string;
-  name: string;
-  email: string;
-  role: "admin" | "staff";
-}
-
-export interface UpdateUserRolePayload {
-  role: "admin" | "staff";
-}
+export type AdminProductPayload = SharedAdminProductPayload;
+export type AdminProductResponse = SharedAdminProductResponse;
+export type AdminUserResponse = SharedAdminUserResponse;
+export type UpdateUserRolePayload = SharedUpdateUserRolePayload;
+export type OrderResponse = SharedOrderResponse;
 
 function toFrontendRole(role: Role): "admin" | "staff" {
   return role === Role.ADMIN ? "admin" : "staff";

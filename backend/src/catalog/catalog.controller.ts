@@ -1,6 +1,12 @@
 import { Controller, Get } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
-import { CatalogCategoryResponse, CatalogProductResponse, CatalogService } from "./catalog.service";
+import {
+  catalogCategoriesSchema,
+  catalogProductsSchema,
+  type CatalogCategory,
+  type CatalogProduct,
+} from "@orderiq/types";
+import { CatalogService } from "./catalog.service";
 
 @ApiTags("catalog")
 @Controller()
@@ -10,14 +16,14 @@ export class CatalogController {
   @Get("products")
   @ApiOperation({ summary: "Termeklista lekerese" })
   @ApiOkResponse({ description: "Termekek sikeresen lekerve" })
-  async products(): Promise<CatalogProductResponse[]> {
-    return this.catalogService.listProducts();
+  async products(): Promise<CatalogProduct[]> {
+    return catalogProductsSchema.parse(await this.catalogService.listProducts());
   }
 
   @Get("categories")
   @ApiOperation({ summary: "Kategoria lista lekerese" })
   @ApiOkResponse({ description: "Kategoriak sikeresen lekerve" })
-  async categories(): Promise<CatalogCategoryResponse[]> {
-    return this.catalogService.listCategories();
+  async categories(): Promise<CatalogCategory[]> {
+    return catalogCategoriesSchema.parse(await this.catalogService.listCategories());
   }
 }

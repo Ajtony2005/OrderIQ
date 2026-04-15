@@ -1,23 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  type CreateOrderInput as SharedCreateOrderInput,
+  type OrderResponse as SharedOrderResponse,
+} from "@orderiq/types";
 import { PaymentMethod } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 
-export interface CreateOrderItemInput {
-  productId: string;
-  quantity: number;
-}
-
-export interface CreateOrderInput {
-  items: CreateOrderItemInput[];
-  tipPercent?: number;
-  paymentMethod: "cash" | "card" | "digital";
-}
-
-export interface OrderResponse {
-  id: string;
-  total: number;
-  createdAt: string;
-}
+export type CreateOrderInput = SharedCreateOrderInput;
+export type OrderResponse = SharedOrderResponse;
 
 const paymentMethodMap: Record<CreateOrderInput["paymentMethod"], PaymentMethod> = {
   cash: PaymentMethod.CASH,

@@ -125,7 +125,7 @@ yarn dev
 - Frontend: `http://localhost:5173`
 - Backend API: `http://localhost:3000/api/v1`
 - Health check: `GET http://localhost:3000/api/v1/health`
-- Swagger UI: `http://localhost:3000/docs` (csak `APP_ENV=development` esetén)
+- Swagger UI: `http://localhost:3000/api/v1/docs` (csak `APP_ENV=development` esetén)
 
 ## 10. Hasznos parancsok
 

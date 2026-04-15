@@ -15,27 +15,23 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
-import { z } from "zod";
-import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import {
-  AdminProductPayload,
-  AdminProductResponse,
-  AdminService,
-  AdminUserResponse,
-  UpdateUserRolePayload,
-} from "./admin.service";
-import { OrderResponse } from "../orders/orders.service";
-
-const adminProductSchema = z.object({
-  name: z.string().trim().min(1).max(120),
-  price: z.number().int().nonnegative(),
-  category: z.string().trim().min(1).max(80),
-  image: z.string().trim().optional(),
-});
-
-const updateUserRoleSchema = z.object({
-  role: z.enum(["admin", "staff"]),
-});
+  adminProductPayloadSchema,
+  adminProductResponseSchema,
+  adminProductResponsesSchema,
+  adminUserResponseSchema,
+  adminUserResponsesSchema,
+  orderResponseSchema,
+  orderResponsesSchema,
+  updateUserRoleSchema,
+  type AdminProductPayload,
+  type AdminProductResponse,
+  type AdminUserResponse,
+  type UpdateUserRolePayload,
+  type OrderResponse,
+} from "@orderiq/types";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { AdminService } from "./admin.service";
 
 type AuthenticatedRequest = {
   user: {
@@ -57,7 +53,7 @@ export class AdminController {
   @ApiOkResponse({ description: "Sikeres termeklista" })
   async listProducts(@Req() req: AuthenticatedRequest): Promise<AdminProductResponse[]> {
     this.ensureAdmin(req.user.role);
-    return this.adminService.listProducts();
+    return adminProductResponsesSchema.parse(await this.adminService.listProducts());
   }
 
   @Post("products")
@@ -70,8 +66,8 @@ export class AdminController {
     this.ensureAdmin(req.user.role);
 
     try {
-      const parsed: AdminProductPayload = adminProductSchema.parse(body);
-      return this.adminService.createProduct(parsed);
+      const parsed: AdminProductPayload = adminProductPayloadSchema.parse(body);
+      return adminProductResponseSchema.parse(await this.adminService.createProduct(parsed));
     } catch (error) {
       this.throwIfValidationError(error);
       throw error;
@@ -89,8 +85,8 @@ export class AdminController {
     this.ensureAdmin(req.user.role);
 
     try {
-      const parsed: AdminProductPayload = adminProductSchema.parse(body);
-      return this.adminService.updateProduct(id, parsed);
+      const parsed: AdminProductPayload = adminProductPayloadSchema.parse(body);
+      return adminProductResponseSchema.parse(await this.adminService.updateProduct(id, parsed));
     } catch (error) {
       this.throwIfValidationError(error);
       throw error;
@@ -110,7 +106,7 @@ export class AdminController {
   @ApiOkResponse({ description: "Sikeres felhasznalo lista" })
   async listUsers(@Req() req: AuthenticatedRequest): Promise<AdminUserResponse[]> {
     this.ensureAdmin(req.user.role);
-    return this.adminService.listUsers();
+    return adminUserResponsesSchema.parse(await this.adminService.listUsers());
   }
 
   @Patch("users/:id")
@@ -125,7 +121,7 @@ export class AdminController {
 
     try {
       const parsed: UpdateUserRolePayload = updateUserRoleSchema.parse(body);
-      return this.adminService.updateUserRole(id, parsed);
+      return adminUserResponseSchema.parse(await this.adminService.updateUserRole(id, parsed));
     } catch (error) {
       this.throwIfValidationError(error);
       throw error;
@@ -137,7 +133,7 @@ export class AdminController {
   @ApiOkResponse({ description: "Sikeres rendeles lista" })
   async listOrders(@Req() req: AuthenticatedRequest): Promise<OrderResponse[]> {
     this.ensureAdmin(req.user.role);
-    return this.adminService.listOrders();
+    return orderResponsesSchema.parse(await this.adminService.listOrders());
   }
 
   @Get("orders/:id")
@@ -148,7 +144,7 @@ export class AdminController {
     @Param("id") id: string,
   ): Promise<OrderResponse> {
     this.ensureAdmin(req.user.role);
-    return this.adminService.getOrderById(id);
+    return orderResponseSchema.parse(await this.adminService.getOrderById(id));
   }
 
   private ensureAdmin(role: "ADMIN" | "USER" | "KITCHEN"): void {

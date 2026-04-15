@@ -141,7 +141,7 @@ Az admin UI a frontendben már ezekre a végpontokra szerveződik. A felület te
 ### 4. Operációs végpontok
 
 - `GET /api/v1/health`
-- `GET /docs` fejlesztői környezetben
+- `GET /api/v1/docs` fejlesztői környezetben
 
 ## Domain modell
 
@@ -252,7 +252,7 @@ docker compose up --build
 - Web alkalmazás: [http://localhost](http://localhost)
 - API reverse proxy mögött: [http://localhost/api/v1](http://localhost/api/v1)
 - Health: [http://localhost/api/v1/health](http://localhost/api/v1/health)
-- Swagger: [http://localhost/docs](http://localhost/docs) ha `APP_ENV=development`
+- Swagger: [http://localhost/api/v1/docs](http://localhost/api/v1/docs) ha `APP_ENV=development`
 
 ## Lokális fejlesztés Docker nélkül
 
@@ -335,7 +335,7 @@ yarn dev
 - Frontend dev server: [http://localhost:5177](http://localhost:5177)
 - Backend API: [http://localhost:3000/api/v1](http://localhost:3000/api/v1)
 - Health: [http://localhost:3000/api/v1/health](http://localhost:3000/api/v1/health)
-- Swagger: [http://localhost:3000/docs](http://localhost:3000/docs)
+- Swagger: [http://localhost:3000/api/v1/docs](http://localhost:3000/api/v1/docs)
 
 Megjegyzés: a Vite dev proxy a `/api` prefixű hívásokat a `http://localhost:3000` backend felé továbbítja.
 
@@ -430,7 +430,7 @@ Routing logika:
 
 ## API dokumentáció
 
-Fejlesztői környezetben a Swagger UI elérhető a `/docs` útvonalon. A backend kódban a Swagger csak akkor aktív, ha:
+Fejlesztői környezetben a Swagger UI elérhető az `/api/v1/docs` útvonalon. A backend kódban a Swagger csak akkor aktív, ha:
 
 ```text
 APP_ENV=development
@@ -514,6 +514,7 @@ Ellenőrizd, hogy:
 
 - `APP_ENV=development`
 - a backend újra lett indítva env változás után
+- a Swagger UI-t az `/api/v1/docs` útvonalon nyitod meg
 
 ### Auth hibák jelentkeznek
 

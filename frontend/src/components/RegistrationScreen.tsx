@@ -1,6 +1,7 @@
 import { useState } from "react";
+import type { RegisterInput } from "@orderiq/types";
 
-export type RegistrationPayload = { name: string; email: string; password: string };
+export type RegistrationPayload = RegisterInput;
 
 interface RegistrationScreenProps {
   onRegister: (payload: RegistrationPayload) => Promise<void>;
@@ -39,7 +40,7 @@ export function RegistrationScreen({ onRegister, onBackToLogin }: RegistrationSc
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-gray-50">
-      <div className="hidden lg:flex flex-col justify-between p-10 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-900 text-white">
+      <div className="hidden lg:flex flex-col justify-between p-10 bg-linear-to-br from-slate-900 via-slate-900 to-indigo-900 text-white">
         <div>
           <div className="inline-flex items-center gap-3 px-3 py-2 rounded-xl bg-white/10">
             <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">

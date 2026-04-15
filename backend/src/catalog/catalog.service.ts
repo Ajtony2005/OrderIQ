@@ -1,18 +1,12 @@
 import { Injectable } from "@nestjs/common";
+import {
+  type CatalogCategory as SharedCatalogCategory,
+  type CatalogProduct as SharedCatalogProduct,
+} from "@orderiq/types";
 import { PrismaService } from "../prisma/prisma.service";
 
-export interface CatalogProductResponse {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  image: string;
-}
-
-export interface CatalogCategoryResponse {
-  id: string;
-  name: string;
-}
+export type CatalogProductResponse = SharedCatalogProduct;
+export type CatalogCategoryResponse = SharedCatalogCategory;
 
 @Injectable()
 export class CatalogService {

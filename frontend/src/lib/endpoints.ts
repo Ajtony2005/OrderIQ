@@ -1,147 +1,144 @@
 import { apiRequest } from "./api";
+import {
+  adminProductPayloadSchema,
+  adminProductResponseSchema,
+  adminProductResponsesSchema,
+  adminUserResponseSchema,
+  adminUserResponsesSchema,
+  catalogCategoriesSchema,
+  catalogProductsSchema,
+  createOrderSchema,
+  orderResponseSchema,
+  orderResponsesSchema,
+  authResponseSchema,
+  authUserSchema,
+  googleLoginSchema,
+  loginSchema,
+  registerSchema,
+  updateProfileSchema,
+  type AdminProductPayload as SharedAdminProductPayload,
+  type AdminProductResponse as SharedAdminProductResponse,
+  type AdminUserResponse as SharedAdminUserResponse,
+  type AuthResponse as SharedAuthResponse,
+  type AuthUser as SharedAuthUser,
+  type CatalogCategory as SharedCatalogCategory,
+  type CatalogProduct as SharedCatalogProduct,
+  type GoogleLoginInput,
+  type LoginInput,
+  type OrderResponse as SharedOrderResponse,
+  type CreateOrderInput as SharedCreateOrderInput,
+  type RegisterInput,
+  type UpdateProfileInput,
+} from "@orderiq/types";
 
-export interface AuthResponse {
-  accessToken: string;
-  user: AuthUser;
-}
+export type LoginPayload = LoginInput;
+export type RegisterPayload = RegisterInput;
+export type GoogleAuthPayload = GoogleLoginInput;
+export type UpdateProfilePayload = UpdateProfileInput;
+export type OrderPayload = SharedCreateOrderInput;
+export type Product = SharedCatalogProduct;
+export type Category = SharedCatalogCategory;
+export type AdminProductPayload = SharedAdminProductPayload;
+export type AdminProductResponse = SharedAdminProductResponse;
+export type AdminUserResponse = SharedAdminUserResponse;
+export type OrderResponse = SharedOrderResponse;
+export type AuthResponse = SharedAuthResponse;
+export type AuthUser = SharedAuthUser;
 
-export interface AuthUser {
-  id: string;
-  name: string;
-  email: string;
-  role: "ADMIN" | "USER" | "KITCHEN";
-  providers: Array<"PASSWORD" | "GOOGLE">;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface LoginPayload {
-  email: string;
-  password: string;
-}
-
-export interface RegisterPayload {
-  name: string;
-  email: string;
-  password: string;
-}
-
-export interface GoogleAuthPayload {
-  idToken: string;
-}
-
-export interface UpdateProfilePayload {
-  name: string;
-}
-
-export interface Product {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  image: string;
-}
-
-export interface Category {
-  id: string;
-  name: string;
-}
-
-export interface CartItemPayload {
-  productId: string;
-  quantity: number;
-}
-
-export interface OrderPayload {
-  items: CartItemPayload[];
-  tipPercent?: number;
-  paymentMethod: "cash" | "card" | "digital";
-}
-
-export interface OrderResponse {
-  id: string;
-  total: number;
-  createdAt: string;
-}
-
-export interface AdminProductPayload {
-  name: string;
-  price: number;
-  category: string;
-  image?: string;
-}
-
-export interface AdminUserResponse {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+export type CartItemPayload = OrderPayload["items"][number];
 
 export const endpoints = {
   auth: {
-    login: (payload: LoginPayload) =>
-      apiRequest<AuthResponse>("/auth/login", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      }),
-    register: (payload: RegisterPayload) =>
-      apiRequest<AuthResponse>("/auth/register", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      }),
-    google: (payload: GoogleAuthPayload) =>
-      apiRequest<AuthResponse>("/auth/google", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      }),
-    me: () => apiRequest<AuthUser>("/auth/me"),
-    updateMe: (payload: UpdateProfilePayload) =>
-      apiRequest<AuthUser>("/auth/me", {
-        method: "PATCH",
-        body: JSON.stringify(payload),
-      }),
+    login: async (payload: LoginPayload) =>
+      authResponseSchema.parse(
+        await apiRequest<SharedAuthResponse>("/auth/login", {
+          method: "POST",
+          body: JSON.stringify(loginSchema.parse(payload)),
+        }),
+      ),
+    register: async (payload: RegisterPayload) =>
+      authResponseSchema.parse(
+        await apiRequest<SharedAuthResponse>("/auth/register", {
+          method: "POST",
+          body: JSON.stringify(registerSchema.parse(payload)),
+        }),
+      ),
+    google: async (payload: GoogleAuthPayload) =>
+      authResponseSchema.parse(
+        await apiRequest<SharedAuthResponse>("/auth/google", {
+          method: "POST",
+          body: JSON.stringify(googleLoginSchema.parse(payload)),
+        }),
+      ),
+    me: async () => authUserSchema.parse(await apiRequest<SharedAuthUser>("/auth/me")),
+    updateMe: async (payload: UpdateProfilePayload) =>
+      authUserSchema.parse(
+        await apiRequest<SharedAuthUser>("/auth/me", {
+          method: "PATCH",
+          body: JSON.stringify(updateProfileSchema.parse(payload)),
+        }),
+      ),
     logout: () => apiRequest<void>("/auth/logout", { method: "POST" }),
   },
   catalog: {
-    products: () => apiRequest<Product[]>("/products"),
-    categories: () => apiRequest<Category[]>("/categories"),
+    products: async () =>
+      catalogProductsSchema.parse(await apiRequest<SharedCatalogProduct[]>("/products")),
+    categories: async () =>
+      catalogCategoriesSchema.parse(await apiRequest<SharedCatalogCategory[]>("/categories")),
   },
   orders: {
-    create: (payload: OrderPayload) =>
-      apiRequest<OrderResponse>("/orders", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      }),
-    list: () => apiRequest<OrderResponse[]>("/orders"),
-    byId: (orderId: string) => apiRequest<OrderResponse>(`/orders/${orderId}`),
+    create: async (payload: OrderPayload) =>
+      orderResponseSchema.parse(
+        await apiRequest<SharedOrderResponse>("/orders", {
+          method: "POST",
+          body: JSON.stringify(createOrderSchema.parse(payload)),
+        }),
+      ),
+    list: async () =>
+      orderResponsesSchema.parse(await apiRequest<SharedOrderResponse[]>("/orders")),
+    byId: async (orderId: string) =>
+      orderResponseSchema.parse(await apiRequest<SharedOrderResponse>(`/orders/${orderId}`)),
   },
   admin: {
     products: {
-      list: () => apiRequest<Product[]>("/admin/products"),
-      create: (payload: AdminProductPayload) =>
-        apiRequest<Product>("/admin/products", {
-          method: "POST",
-          body: JSON.stringify(payload),
-        }),
-      update: (id: string, payload: AdminProductPayload) =>
-        apiRequest<Product>(`/admin/products/${id}`, {
-          method: "PUT",
-          body: JSON.stringify(payload),
-        }),
+      list: async () =>
+        adminProductResponsesSchema.parse(
+          await apiRequest<SharedAdminProductResponse[]>("/admin/products"),
+        ),
+      create: async (payload: AdminProductPayload) =>
+        adminProductResponseSchema.parse(
+          await apiRequest<SharedAdminProductResponse>("/admin/products", {
+            method: "POST",
+            body: JSON.stringify(adminProductPayloadSchema.parse(payload)),
+          }),
+        ),
+      update: async (id: string, payload: AdminProductPayload) =>
+        adminProductResponseSchema.parse(
+          await apiRequest<SharedAdminProductResponse>(`/admin/products/${id}`, {
+            method: "PUT",
+            body: JSON.stringify(adminProductPayloadSchema.parse(payload)),
+          }),
+        ),
       remove: (id: string) => apiRequest<void>(`/admin/products/${id}`, { method: "DELETE" }),
     },
     users: {
-      list: () => apiRequest<AdminUserResponse[]>("/admin/users"),
-      updateRole: (id: string, role: string) =>
-        apiRequest<AdminUserResponse>(`/admin/users/${id}`, {
-          method: "PATCH",
-          body: JSON.stringify({ role }),
-        }),
+      list: async () =>
+        adminUserResponsesSchema.parse(await apiRequest<SharedAdminUserResponse[]>("/admin/users")),
+      updateRole: async (id: string, role: string) =>
+        adminUserResponseSchema.parse(
+          await apiRequest<SharedAdminUserResponse>(`/admin/users/${id}`, {
+            method: "PATCH",
+            body: JSON.stringify({ role }),
+          }),
+        ),
     },
     orders: {
-      list: () => apiRequest<OrderResponse[]>("/admin/orders"),
-      byId: (orderId: string) => apiRequest<OrderResponse>(`/admin/orders/${orderId}`),
+      list: async () =>
+        orderResponsesSchema.parse(await apiRequest<SharedOrderResponse[]>("/admin/orders")),
+      byId: async (orderId: string) =>
+        orderResponseSchema.parse(
+          await apiRequest<SharedOrderResponse>(`/admin/orders/${orderId}`),
+        ),
     },
   },
 };

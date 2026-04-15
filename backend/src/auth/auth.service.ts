@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from "@nestjs/common";
-import { type LoginInput, type RegisterInput } from "@orderiq/types";
+import { type LoginInput, type RegisterInput, type UpdateProfileInput } from "@orderiq/types";
 import { JwtService } from "@nestjs/jwt";
 import { AuthProvider, Role, User } from "@prisma/client";
 import * as bcrypt from "bcrypt";
@@ -237,7 +237,7 @@ export class AuthService {
     return this.toSafeUser(user);
   }
 
-  async updateProfile(userId: string, input: { name: string }): Promise<SafeUser> {
+  async updateProfile(userId: string, input: UpdateProfileInput): Promise<SafeUser> {
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
       data: {

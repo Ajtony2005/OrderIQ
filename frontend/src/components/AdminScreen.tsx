@@ -7,6 +7,7 @@ import {
   OrderResponse,
 } from "../lib/endpoints";
 import { fetchUnsplashImageUrl } from "../lib/unsplash";
+import { adminProductPayloadSchema } from "@orderiq/types";
 
 interface AdminScreenProps {
   onBack: () => void;
@@ -15,32 +16,11 @@ interface AdminScreenProps {
 type AdminTab = "products" | "users" | "orders";
 
 function normalizeProductPayload(payload: AdminProductPayload): AdminProductPayload {
-  const name = payload.name.trim();
-  const category = payload.category.trim();
-  const image = payload.image?.trim();
-  const price = Number(payload.price);
-
-  if (!name) {
-    throw new Error("A termek neve kotelezo.");
-  }
-
-  if (!category) {
-    throw new Error("A kategoria neve kotelezo.");
-  }
-
-  if (!Number.isFinite(price)) {
-    throw new Error("Az ar ervenytelen.");
-  }
-
-  if (!Number.isInteger(price) || price < 0) {
-    throw new Error("Az ar csak nem negativ egesz szam lehet.");
-  }
+  const parsed = adminProductPayloadSchema.parse(payload);
 
   return {
-    name,
-    category,
-    price,
-    image: image || undefined,
+    ...parsed,
+    image: parsed.image?.trim() || undefined,
   };
 }
 

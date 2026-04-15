@@ -54,7 +54,7 @@ async function bootstrap() {
       )
       .build();
     const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
-    SwaggerModule.setup("docs", app, swaggerDocument);
+    SwaggerModule.setup("docs", app, swaggerDocument, { useGlobalPrefix: true });
   }
 
   await app.listen(port, "0.0.0.0");
